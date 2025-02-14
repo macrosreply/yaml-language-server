@@ -466,7 +466,8 @@ export class YAMLSchemaService extends JSONSchemaService {
                   },
                 };
               },
-              () => {
+              (error) => {
+                console.error(error);
                 return resolveSchema();
               }
             );

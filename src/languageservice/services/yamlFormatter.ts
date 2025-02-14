@@ -7,7 +7,7 @@
 import { Range, Position, TextEdit, FormattingOptions } from 'vscode-languageserver-types';
 import { CustomFormatterOptions, LanguageSettings } from '../yamlLanguageService';
 import { format, Options } from 'prettier';
-import * as parser from 'prettier/plugins/yaml';
+import * as parser from 'prettier/parser-yaml';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 export class YAMLFormatter {
