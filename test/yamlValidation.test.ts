@@ -53,6 +53,12 @@ describe('YAML Validation Tests', () => {
       expect(result.length).to.be.equal(1);
       expect(result[0]).deep.equal(createExpectedError('Tabs are not allowed as indentation', 1, 1, 1, 10));
     });
+
+    it('Should allow proper space indentation followed by tab', async () => {
+      const yaml = 'foo:\n  \tbar';
+      const result = await parseSetup(yaml);
+      expect(result).to.be.empty;
+    });
   });
 
   describe('Unused anchors diagnostics', () => {
@@ -84,13 +90,23 @@ some:
 ee: *g`;
       const result = await parseSetup(yaml);
       expect(result).is.not.empty;
-      expect(result.length).to.be.equal(4);
+      expect(result.length).to.be.equal(5);
       expect(result).to.include.deep.members([
         createUnusedAnchorDiagnostic('Unused anchor "&bar"', 0, 5, 0, 9),
         createUnusedAnchorDiagnostic('Unused anchor "&a"', 4, 2, 4, 4),
         createUnusedAnchorDiagnostic('Unused anchor "&aa"', 5, 0, 5, 3),
         createUnusedAnchorDiagnostic('Unused anchor "&e"', 8, 4, 8, 6),
       ]);
+    });
+  });
+
+  describe('Unresolved alias diagnostics', () => {
+    it('should report unresolved alias', async () => {
+      const yaml = 'foo: *bar';
+      const result = await parseSetup(yaml);
+      expect(result).is.not.empty;
+      expect(result.length).to.be.equal(1);
+      expect(result[0]).deep.equal(createUnusedAnchorDiagnostic('Unresolved alias "*bar"', 0, 5, 0, 9));
     });
   });
 
