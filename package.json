@@ -42,7 +42,6 @@
     "yaml": "2.7.1"
   },
   "devDependencies": {
-    "@microsoft/eslint-formatter-sarif": "3.0.0",
     "@types/chai": "^4.2.12",
     "@types/common-tags": "^1.8.4",
     "@types/mocha": "8.2.2",
