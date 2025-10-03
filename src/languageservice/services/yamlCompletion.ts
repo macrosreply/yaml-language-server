@@ -30,7 +30,6 @@ import { ResolvedSchema } from 'vscode-json-languageservice/lib/umd/services/jso
 import { JSONSchema, JSONSchemaRef } from '../jsonSchema';
 import { stringifyObject, StringifySettings } from '../utils/json';
 import { isDefined, isString } from '../utils/objects';
-import * as nls from 'vscode-nls';
 import { setKubernetesParserOption } from '../parser/isKubernetes';
 import { asSchema } from '../parser/jsonParser07';
 import { indexOf, isInComment, isMapContainsEmptyPair } from '../utils/astUtils';
@@ -38,8 +37,7 @@ import { isModeline } from './modelineUtil';
 import { getSchemaTypeName, isAnyOfAllOfOneOfType, isPrimitiveType } from '../utils/schemaUtils';
 import { YamlNode } from '../jsonASTTypes';
 import { SettingsState } from '../../yamlSettings';
-
-const localize = nls.loadMessageBundle();
+import * as l10n from '@vscode/l10n';
 
 const doubleQuotesEscapeRegExp = /[\\]+"/g;
 
@@ -328,7 +326,7 @@ export class YamlCompletion {
         if (position.line === 0 && position.character === 0 && !isModeline(lineContent)) {
           const inlineSchemaCompletion = {
             kind: CompletionItemKind.Text,
-            label: 'Inline schema',
+            label: l10n.t('Inline schema'),
             insertText: '# yaml-language-server: $schema=',
             insertTextFormat: InsertTextFormat.PlainText,
           };
@@ -515,6 +513,11 @@ export class YamlCompletion {
         }
       }
 
+      const ignoreScalars =
+        textBuffer.getLineContent(overwriteRange.start.line).trim().length === 0 &&
+        originalNode &&
+        ((isScalar(originalNode) && originalNode.value === null) || isSeq(originalNode));
+
       // completion for object keys
       if (node && isMap(node)) {
         // don't suggest properties that are already present
@@ -536,7 +539,8 @@ export class YamlCompletion {
           collector,
           textBuffer,
           overwriteRange,
-          doComplete
+          doComplete,
+          ignoreScalars
         );
 
         if (!schema && currentWord.length > 0 && text.charAt(offset - currentWord.length - 1) !== '"') {
@@ -551,7 +555,7 @@ export class YamlCompletion {
 
       // proposals for values
       const types: { [type: string]: boolean } = {};
-      this.getValueCompletions(schema, currentDoc, node, offset, document, collector, types, doComplete);
+      this.getValueCompletions(schema, currentDoc, node, offset, document, collector, types, doComplete, ignoreScalars);
     } catch (err) {
       this.telemetry?.sendError('yaml.completion.error', err);
     }
@@ -691,7 +695,8 @@ export class YamlCompletion {
     collector: CompletionsCollector,
     textBuffer: TextBuffer,
     overwriteRange: Range,
-    doComplete: boolean
+    doComplete: boolean,
+    ignoreScalars: boolean
   ): void {
     const matchingSchemas = doc.getMatchingSchemas(schema.schema, -1, null, doComplete);
     const existingKey = textBuffer.getText(overwriteRange);
@@ -710,6 +715,7 @@ export class YamlCompletion {
         }
       });
     }
+
     for (const schema of matchingSchemas) {
       if (
         ((schema.node.internalNode === node && !matchOriginal) ||
@@ -768,7 +774,7 @@ export class YamlCompletion {
                     pair
                   ) {
                     if (Array.isArray(propertySchema.items)) {
-                      this.addSchemaValueCompletions(propertySchema.items[0], separatorAfter, collector, {}, 'property');
+                      this.addSchemaValueCompletions(propertySchema.items[0], separatorAfter, collector, {}, ignoreScalars, true);
                     } else if (typeof propertySchema.items === 'object' && propertySchema.items.type === 'object') {
                       this.addArrayItemValueCompletion(propertySchema.items, separatorAfter, collector);
                     }
@@ -828,14 +834,7 @@ export class YamlCompletion {
         //    - item1
         // it will treated as a property key since `:` has been appended
         if (nodeParent && isSeq(nodeParent) && isPrimitiveType(schema.schema)) {
-          this.addSchemaValueCompletions(
-            schema.schema,
-            separatorAfter,
-            collector,
-            {},
-            'property',
-            Array.isArray(nodeParent.items)
-          );
+          this.addSchemaValueCompletions(schema.schema, separatorAfter, collector, {}, ignoreScalars);
         }
 
         if (schema.schema.propertyNames && schema.schema.additionalProperties && schema.schema.type === 'object') {
@@ -893,7 +892,8 @@ export class YamlCompletion {
     document: TextDocument,
     collector: CompletionsCollector,
     types: { [type: string]: boolean },
-    doComplete: boolean
+    doComplete: boolean,
+    ignoreScalars: boolean
   ): void {
     let parentKey: string = null;
 
@@ -902,7 +902,7 @@ export class YamlCompletion {
     }
 
     if (!node) {
-      this.addSchemaValueCompletions(schema.schema, '', collector, types, 'value');
+      this.addSchemaValueCompletions(schema.schema, '', collector, types, false);
       return;
     }
 
@@ -930,26 +930,29 @@ export class YamlCompletion {
               if (Array.isArray(s.schema.items)) {
                 const index = this.findItemAtOffset(node, document, offset);
                 if (index < s.schema.items.length) {
-                  this.addSchemaValueCompletions(s.schema.items[index], separatorAfter, collector, types, 'value');
+                  this.addSchemaValueCompletions(s.schema.items[index], separatorAfter, collector, types, false);
                 }
-              } else if (
-                typeof s.schema.items === 'object' &&
-                (s.schema.items.type === 'object' || isAnyOfAllOfOneOfType(s.schema.items))
-              ) {
-                this.addSchemaValueCompletions(s.schema.items, separatorAfter, collector, types, 'value', true);
               } else {
-                this.addSchemaValueCompletions(s.schema.items, separatorAfter, collector, types, 'value');
+                this.addSchemaValueCompletions(
+                  s.schema.items,
+                  separatorAfter,
+                  collector,
+                  types,
+                  ignoreScalars,
+                  typeof s.schema.items === 'object' &&
+                    (s.schema.items.type === 'object' || isAnyOfAllOfOneOfType(s.schema.items))
+                );
               }
             }
           }
           if (s.schema.properties) {
             const propertySchema = s.schema.properties[parentKey];
             if (propertySchema) {
-              this.addSchemaValueCompletions(propertySchema, separatorAfter, collector, types, 'value');
+              this.addSchemaValueCompletions(propertySchema, separatorAfter, collector, types, ignoreScalars);
             }
           }
           if (s.schema.additionalProperties) {
-            this.addSchemaValueCompletions(s.schema.additionalProperties, separatorAfter, collector, types, 'value');
+            this.addSchemaValueCompletions(s.schema.additionalProperties, separatorAfter, collector, types, ignoreScalars);
           }
         }
       }
@@ -976,12 +979,12 @@ export class YamlCompletion {
     const schemaTypeTitle = schemaType ? ' type `' + schemaType + '`' : '';
     const schemaDescription = schema.description ? ' (' + schema.description + ')' : '';
     const documentation = this.getDocumentationWithMarkdownText(
-      `Create an item of an array${schemaTypeTitle}${schemaDescription}`,
+      l10n.t('create.item.array', schemaTypeTitle, schemaDescription),
       insertText
     );
     collector.add({
       kind: this.getSuggestionKind(schema.type),
-      label: '- (array item) ' + (schemaType || index),
+      label: l10n.t('array.item') + (schemaType || index),
       documentation: documentation,
       insertText: insertText,
       insertTextFormat: InsertTextFormat.Snippet,
@@ -1327,32 +1330,31 @@ export class YamlCompletion {
     separatorAfter: string,
     collector: CompletionsCollector,
     types: unknown,
-    completionType: 'property' | 'value',
-    isArray?: boolean
+    ignoreScalars = false,
+    addArrayItem = false
   ): void {
     if (typeof schema === 'object') {
-      this.addEnumValueCompletions(schema, separatorAfter, collector, isArray);
+      this.addEnumValueCompletions(schema, separatorAfter, collector, ignoreScalars);
       this.addDefaultValueCompletions(schema, separatorAfter, collector);
       this.collectTypes(schema, types);
 
-      if (isArray && completionType === 'value' && !isAnyOfAllOfOneOfType(schema)) {
-        // add array only for final types (no anyOf, allOf, oneOf)
+      if (addArrayItem && !isAnyOfAllOfOneOfType(schema)) {
         this.addArrayItemValueCompletion(schema, separatorAfter, collector);
       }
 
       if (Array.isArray(schema.allOf)) {
         schema.allOf.forEach((s) => {
-          return this.addSchemaValueCompletions(s, separatorAfter, collector, types, completionType, isArray);
+          return this.addSchemaValueCompletions(s, separatorAfter, collector, types, ignoreScalars, addArrayItem);
         });
       }
       if (Array.isArray(schema.anyOf)) {
         schema.anyOf.forEach((s) => {
-          return this.addSchemaValueCompletions(s, separatorAfter, collector, types, completionType, isArray);
+          return this.addSchemaValueCompletions(s, separatorAfter, collector, types, ignoreScalars, addArrayItem);
         });
       }
       if (Array.isArray(schema.oneOf)) {
         schema.oneOf.forEach((s) => {
-          return this.addSchemaValueCompletions(s, separatorAfter, collector, types, completionType, isArray);
+          return this.addSchemaValueCompletions(s, separatorAfter, collector, types, ignoreScalars, addArrayItem);
         });
       }
     }
@@ -1388,7 +1390,7 @@ export class YamlCompletion {
       }
       let label;
       if (typeof value == 'object') {
-        label = 'Default value';
+        label = l10n.t('Default Value');
       } else {
         label = (value as unknown).toString().replace(doubleQuotesEscapeRegExp, '"');
       }
@@ -1397,7 +1399,7 @@ export class YamlCompletion {
         label,
         insertText: this.getInsertTextForValue(value, separatorAfter, type),
         insertTextFormat: InsertTextFormat.Snippet,
-        detail: localize('json.suggest.default', 'Default value'),
+        detail: l10n.t('Default Value'),
       });
       hasProposals = true;
     }
@@ -1432,20 +1434,25 @@ export class YamlCompletion {
     schema: JSONSchema,
     separatorAfter: string,
     collector: CompletionsCollector,
-    isArray: boolean
+    ignoreScalars: boolean
   ): void {
-    if (isDefined(schema.const) && !isArray) {
-      collector.add({
-        kind: this.getSuggestionKind(schema.type),
-        label: this.getLabelForValue(schema.const),
-        insertText: this.getInsertTextForValue(schema.const, separatorAfter, schema.type),
-        insertTextFormat: InsertTextFormat.Snippet,
-        documentation: this.fromMarkup(schema.markdownDescription) || schema.description,
-      });
+    if (isDefined(schema.const)) {
+      if (!ignoreScalars || typeof schema.const === 'object') {
+        collector.add({
+          kind: this.getSuggestionKind(schema.type),
+          label: this.getLabelForValue(schema.const),
+          insertText: this.getInsertTextForValue(schema.const, separatorAfter, schema.type),
+          insertTextFormat: InsertTextFormat.Snippet,
+          documentation: this.fromMarkup(schema.markdownDescription) || schema.description,
+        });
+      }
     }
+
     if (Array.isArray(schema.enum)) {
       for (let i = 0, length = schema.enum.length; i < length; i++) {
         const enm = schema.enum[i];
+        if (ignoreScalars && typeof enm !== 'object') continue;
+
         let documentation = this.fromMarkup(schema.markdownDescription) || schema.description;
         if (schema.markdownEnumDescriptions && i < schema.markdownEnumDescriptions.length && this.doesSupportMarkdown()) {
           documentation = this.fromMarkup(schema.markdownEnumDescriptions[i]);

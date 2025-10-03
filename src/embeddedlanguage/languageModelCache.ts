@@ -88,7 +88,7 @@ export function getLanguageModelCache<T>(
     },
     dispose() {
       if (typeof cleanupInterval !== 'undefined') {
-        clearInterval(cleanupInterval);
+        clearInterval(cleanupInterval as any);
         cleanupInterval = undefined;
 
         for (const uri in languageModels) {

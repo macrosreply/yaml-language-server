@@ -163,7 +163,14 @@ export class SettingsHandler {
       if (enableFormatter) {
         if (!this.yamlSettings.formatterRegistration) {
           this.yamlSettings.formatterRegistration = this.connection.client.register(DocumentFormattingRequest.type, {
-            documentSelector: [{ language: 'yaml' }],
+            documentSelector: [
+              { language: 'yaml' },
+              { language: 'dockercompose' },
+              { language: 'github-actions-workflow' },
+              { language: 'yaml-textmate' },
+              { language: 'yaml-tmlanguage' },
+              { pattern: '*.y(a)ml' },
+            ],
           });
         }
       } else if (this.yamlSettings.formatterRegistration) {
