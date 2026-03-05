@@ -1946,7 +1946,7 @@ describe('Auto Completion Tests', () => {
 
       expect(completion.items.length).equal(1);
       expect(completion.items[0]).to.deep.equal(
-        createExpectedCompletion('@test', '"@test"', 0, 6, 0, 6, 12, 2, {
+        createExpectedCompletion('"@test"', '"@test"', 0, 6, 0, 6, 12, 2, {
           documentation: undefined,
         })
       );
@@ -2409,11 +2409,11 @@ describe('Auto Completion Tests', () => {
       expect(testItem).to.not.undefined;
       expect(testItem.textEdit.newText).equal('test');
 
-      const oneItem = completion.items.find((i) => i.label === '1');
+      const oneItem = completion.items.find((i) => i.label === '"1"');
       expect(oneItem).to.not.undefined;
       expect(oneItem.textEdit.newText).equal('"1"');
 
-      const trueItem = completion.items.find((i) => i.label === 'true');
+      const trueItem = completion.items.find((i) => i.label === '"true"');
       expect(trueItem).to.not.undefined;
       expect(trueItem.textEdit.newText).equal('"true"');
     });
@@ -2707,7 +2707,56 @@ describe('Auto Completion Tests', () => {
         createExpectedCompletion('2', '2', 0, 9, 0, 9, 12, InsertTextFormat.Snippet, { documentation: undefined })
       );
       expect(completion.items[1]).eql(
-        createExpectedCompletion('2.1', '2.1', 0, 9, 0, 9, 12, InsertTextFormat.Snippet, { documentation: undefined })
+        createExpectedCompletion('2.1', '2.1', 0, 9, 0, 9, 12, InsertTextFormat.Snippet, {
+          documentation: undefined,
+          detail: 'Default value',
+        })
+      );
+    });
+    it('required enum property completes with default value', async () => {
+      schemaProvider.addSchema(SCHEMA_ID, {
+        type: 'object',
+        properties: {
+          Mode: {
+            type: 'integer',
+            enum: [0, 1],
+            default: 1,
+          },
+        },
+        required: ['Mode'],
+      });
+      const completion = await parseSetup('', 0);
+      expect(completion.items[0]).eql(
+        createExpectedCompletion('Mode', 'Mode: 1', 0, 0, 0, 0, 10, InsertTextFormat.Snippet, { documentation: '' })
+      );
+    });
+    it('enum completion should label the default value', async () => {
+      schemaProvider.addSchema(SCHEMA_ID, {
+        type: 'object',
+        properties: {
+          Mode: {
+            type: 'integer',
+            enum: [0, 1],
+            default: 1,
+          },
+        },
+      });
+
+      const content = 'Mode: ';
+      const completion = await parseSetup(content, content.length);
+
+      const zero = completion.items.find((i) => i.label === '0');
+      const one = completion.items.find((i) => i.label === '1');
+
+      expect(zero, 'Expected enum option 0').to.not.be.undefined;
+      expect(one, 'Expected enum option 1').to.not.be.undefined;
+
+      expect(zero).eql(createExpectedCompletion('0', '0', 0, 6, 0, 6, 12, 2, { documentation: undefined }));
+      expect(one).eql(
+        createExpectedCompletion('1', '1', 0, 6, 0, 6, 12, 2, {
+          documentation: undefined,
+          detail: 'Default value',
+        })
       );
     });
   });
@@ -3133,6 +3182,43 @@ describe('Auto Completion Tests', () => {
             value: '```yaml\noptions:\n  label: \nprop1: \n```',
           },
           sortText: '_object',
+        })
+      );
+    });
+    it('object completion with default boolean and default integer', async () => {
+      schemaProvider.addSchema(SCHEMA_ID, {
+        type: 'object',
+        properties: {
+          env: {
+            type: 'object',
+            properties: {
+              val: {
+                type: 'boolean',
+                default: false,
+              },
+            },
+            required: ['val'],
+          },
+          salad: {
+            type: 'integer',
+            default: 0,
+          },
+        },
+        required: ['env', 'salad'],
+      });
+
+      const content = '';
+      const result = await parseSetup(content, 0);
+
+      assert.equal(result.items.length, 3);
+      assert.deepEqual(
+        result.items[1],
+        createExpectedCompletion('object', 'env:\n  val: ${1:false}\nsalad: 0', 0, 0, 0, 0, 7, 2, {
+          sortText: '_object',
+          documentation: {
+            kind: 'markdown',
+            value: '```yaml\nenv:\n  val: false\nsalad: 0\n```',
+          },
         })
       );
     });
