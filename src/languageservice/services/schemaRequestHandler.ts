@@ -46,7 +46,6 @@ export const schemaRequestHandler = async (
   if (isRelativePath(uri)) {
     // If the requested schema URI is a relative file path
     // Convert it into a proper absolute path URI
-    uri = relativeToAbsolutePath(workspaceFolders, workspaceRoot, uri);
     // HACK: the fs/readUri extension is only available with vscode-yaml,
     // and this fix is specific to vscode-yaml on web, so don't use it in other cases
     if (workspaceFolders.length === 1 && isWeb) {

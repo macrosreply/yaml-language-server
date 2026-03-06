@@ -1,7 +1,7 @@
 {
   "$id": "https://ebuilder.macrosreply.info/schemas/ebuilder.component.schema.json",
-  "title": "eBuilder engine - Configs/UI schema",
-  "description": "eBuilder engine - Configs/UI schema",
+  "title": "eBuilder - Configs/UI",
+  "description": "eBuilder - Configs/UI",
   "type": "object",
   "properties": {},
   "additionalProperties": false,

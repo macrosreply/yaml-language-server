@@ -176,6 +176,7 @@ export class SettingsHandler {
           this.yamlSettings.formatterRegistration = this.connection.client.register(DocumentFormattingRequest.type, {
             documentSelector: [
               { language: 'yaml' },
+              { language: 'eBuilder.yaml' },
               { pattern: '*.y(a)ml' },
               { language: 'yaml-textmate' },
               { language: 'yaml-tmlanguage' },

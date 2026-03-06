@@ -1,7 +1,7 @@
 {
   "$id": "https://ebuilder.macrosreply.info/schemas/ebuilder.component.schema.json",
-  "title": "eBuilder engine - Configs/Sql schema",
-  "description": "eBuilder engine - Configs/Sql schema",
+  "title": "eBuilder - Configs/Sql",
+  "description": "eBuilder - Configs/Sql",
   "type": "object",
   "properties": {
     "query": {

@@ -3,13 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { promises as fs } from 'fs';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Connection } from 'vscode-languageserver/node';
+import { URI } from 'vscode-uri';
 import { JSONSchema } from '../../languageservice/jsonSchema';
 import { yamlDocumentsCache } from '../../languageservice/parser/yaml-documents';
 import { YAMLSchemaService } from '../../languageservice/services/yamlSchemaService';
 import { getSchemaUrls } from '../../languageservice/utils/schemaUrls';
+import {
+  JSONSchemaDescription,
+  JSONSchemaDescriptionExt,
+  SchemaSelectionRequests,
+  VSCodeContentRequest,
+} from '../../requestTypes';
 import { SettingsState } from '../../yamlSettings';
-import { JSONSchemaDescription, JSONSchemaDescriptionExt, SchemaSelectionRequests } from '../../requestTypes';
 
 export class JSONSchemaSelection {
   constructor(
@@ -37,8 +45,48 @@ export class JSONSchemaSelection {
     });
   }
 
+  /**
+   * Get or fetch a document by URI
+   * First tries to get from tracked documents, then attempts to fetch via VS Code if available
+   */
+  private async getOrFetchDocument(docUri: string): Promise<TextDocument | undefined> {
+    // First try to get from tracked documents
+    let document = this.yamlSettings?.documents.get(docUri);
+    if (document) {
+      return document;
+    }
+
+    // If not found and connection is available, try to fetch the content
+    if (this.connection && this.yamlSettings?.useVSCodeContentRequest) {
+      try {
+        const content = await this.connection.sendRequest(VSCodeContentRequest.type, docUri);
+        if (content) {
+          // Create a temporary TextDocument from the fetched content
+          document = TextDocument.create(docUri, 'yaml', 0, content);
+          return document;
+        }
+      } catch (error) {
+        // VSCodeContentRequest failed, will try filesystem fallback
+      }
+    }
+
+    // Fallback: Try to read file:// URIs directly from filesystem
+    try {
+      const uri = URI.parse(docUri);
+      if (uri.scheme === 'file') {
+        const content = await fs.readFile(uri.fsPath, 'utf-8');
+        document = TextDocument.create(docUri, 'yaml', 0, content);
+        return document;
+      }
+    } catch (error) {
+      // File read failed, document will remain undefined
+    }
+
+    return undefined;
+  }
+
   private async getSchemasForFile(docUri: string): Promise<Map<string, JSONSchema>> {
-    const document = this.yamlSettings?.documents.get(docUri);
+    const document = await this.getOrFetchDocument(docUri);
     const schemas = new Map<string, JSONSchema>();
     if (!document) {
       return schemas;
