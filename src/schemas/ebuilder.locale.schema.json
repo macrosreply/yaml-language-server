@@ -1,7 +1,7 @@
 {
   "$id": "https://ebuilder.macrosreply.info/schemas/ebuilder.component.schema.json",
-  "title": "eBuilder engine - Locale schema",
-  "description": "eBuilder engine - Locale schema",
+  "title": "eBuilder - Locale",
+  "description": "eBuilder - Locale",
   "type": "object",
   "properties": {
     "language": {

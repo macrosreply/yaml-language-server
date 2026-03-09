@@ -1,7 +1,7 @@
 {
   "$id": "https://ebuilder.macrosreply.info/schemas/ebuilder.component.schema.json",
-  "title": "eBuilder engine - Configs/Constant schema",
-  "description": "eBuilder engine - Configs/Constant schema",
+  "title": "eBuilder - Configs/Constant",
+  "description": "eBuilder - Configs/Constant",
   "type": "object",
   "properties": {
     "constants": {

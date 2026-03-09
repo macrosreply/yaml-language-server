@@ -3,12 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as path from 'path';
 import { Connection } from 'vscode-languageserver';
 import {
   CodeActionParams,
-  CodeLensParams,
-  DefinitionParams,
   DidChangeWatchedFilesParams,
   DocumentFormattingParams,
   DocumentLinkParams,
@@ -18,6 +15,10 @@ import {
   SelectionRangeParams,
   SignatureHelpParams,
   TextDocumentPositionParams,
+  CodeLensParams,
+  DefinitionParams,
+  PrepareRenameParams,
+  RenameParams,
 } from 'vscode-languageserver-protocol';
 import {
   CodeAction,
@@ -30,18 +31,22 @@ import {
   DocumentSymbol,
   FoldingRange,
   Hover,
+  Range,
   SelectionRange,
   SignatureHelp,
   SymbolInformation,
   TextEdit,
+  WorkspaceEdit,
 } from 'vscode-languageserver-types';
 import { LanguageModes, getLanguageModes, isCompletionItemData } from '../../embeddedlanguage/modes/languageModes';
 import { isKubernetesAssociatedDocument } from '../../languageservice/parser/isKubernetes';
 import { Telemetry } from '../../languageservice/telemetry';
 import { LanguageService } from '../../languageservice/yamlLanguageService';
-import { ResultLimitReachedNotification } from '../../requestTypes';
 import { SettingsState } from '../../yamlSettings';
 import { ValidationHandler } from './validationHandlers';
+import { ResultLimitReachedNotification } from '../../requestTypes';
+import * as path from 'path';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 export class LanguageHandlers {
   private languageService: LanguageService;
@@ -95,6 +100,8 @@ export class LanguageHandlers {
     this.connection.onCodeLensResolve((params) => this.codeLensResolveHandler(params));
     this.connection.onDefinition((params) => this.definitionHandler(params));
     this.connection.onShutdown(() => this.languageModes.dispose());
+    this.connection.onPrepareRename((params) => this.prepareRenameHandler(params));
+    this.connection.onRenameRequest((params) => this.renameHandler(params));
 
     this.yamlSettings.documents.onDidChangeContent((change) => this.cancelLimitExceededWarnings(change.document.uri));
     this.yamlSettings.documents.onDidClose((event) => {
@@ -142,11 +149,16 @@ export class LanguageHandlers {
    * Called when the formatter is invoked
    * Returns the formatted document content using prettier
    */
-  formatterHandler(formatParams: DocumentFormattingParams): Promise<TextEdit[]> {
+  async formatterHandler(formatParams: DocumentFormattingParams): Promise<TextEdit[]> {
     const document = this.yamlSettings.documents.get(formatParams.textDocument.uri);
 
     if (!document) {
-      return;
+      return [];
+    }
+
+    const formatEnabled = await this.resolveFormatterState(document);
+    if (!formatEnabled) {
+      return [];
     }
 
     const customFormatterSettings = {
@@ -326,6 +338,24 @@ export class LanguageHandlers {
     return this.languageService.doDefinition(textDocument, params);
   }
 
+  prepareRenameHandler(params: PrepareRenameParams): Range | null {
+    const textDocument = this.yamlSettings.documents.get(params.textDocument.uri);
+    if (!textDocument) {
+      return null;
+    }
+
+    return this.languageService.prepareRename(textDocument, params);
+  }
+
+  renameHandler(params: RenameParams): WorkspaceEdit | null {
+    const textDocument = this.yamlSettings.documents.get(params.textDocument.uri);
+    if (!textDocument) {
+      return null;
+    }
+
+    return this.languageService.doRename(textDocument, params);
+  }
+
   // Adapted from:
   // https://github.com/microsoft/vscode/blob/94c9ea46838a9a619aeafb7e8afd1170c967bb55/extensions/json-language-features/server/src/jsonServer.ts#L172
   private cancelLimitExceededWarnings(uri: string): void {
@@ -360,5 +390,25 @@ export class LanguageHandlers {
         this.pendingLimitExceededWarnings[uri] = warning;
       }
     };
+  }
+
+  private async resolveFormatterState(document: TextDocument): Promise<boolean> {
+    const fallback = this.yamlSettings.yamlFormatterSettings.enable !== false;
+    if (this.yamlSettings.hasConfigurationCapability && this.connection.workspace?.getConfiguration) {
+      try {
+        const scopedLanguageSettings = await this.connection.workspace.getConfiguration({
+          section: `[${document.languageId}]`,
+          scopeUri: document.uri,
+        });
+
+        if (typeof scopedLanguageSettings?.['yaml.format.enable'] === 'boolean') {
+          return scopedLanguageSettings['yaml.format.enable'];
+        }
+      } catch {
+        // ignore and fall back to global setting
+      }
+    }
+
+    return fallback;
   }
 }

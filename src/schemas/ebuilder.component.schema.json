@@ -1,7 +1,7 @@
 {
   "$id": "https://ebuilder.macrosreply.info/schemas/ebuilder.component.schema.json",
-  "title": "eBuilder engine - Component schema",
-  "description": "eBuilder engine - Component schema",
+  "title": "eBuilder - Component",
+  "description": "eBuilder - Component",
   "type": "object",
   "properties": {
     "includes": {

@@ -1,7 +1,7 @@
 {
   "$id": "https://ebuilder.macrosreply.info/schemas/ebuilder.component.schema.json",
-  "title": "eBuilder engine - Configs/Security schema",
-  "description": "eBuilder engine - Configs/Security schema",
+  "title": "eBuilder - Configs/Security",
+  "description": "eBuilder - Configs/Security",
   "type": "object",
   "properties": {},
   "additionalProperties": false,

@@ -1,7 +1,7 @@
 {
   "$id": "https://ebuilder.macrosreply.info/schemas/ebuilder.component.schema.json",
-  "title": "eBuilder engine - Configs/Task schema",
-  "description": "eBuilder engine - Configs/Task schema",
+  "title": "eBuilder - Configs/Task",
+  "description": "eBuilder - Configs/Task",
   "type": "object",
   "properties": {
     "tasks": {

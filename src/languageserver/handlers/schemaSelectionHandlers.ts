@@ -3,13 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { promises as fs } from 'fs';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Connection } from 'vscode-languageserver/node';
+import { URI } from 'vscode-uri';
 import { JSONSchema } from '../../languageservice/jsonSchema';
 import { yamlDocumentsCache } from '../../languageservice/parser/yaml-documents';
 import { YAMLSchemaService } from '../../languageservice/services/yamlSchemaService';
 import { getSchemaUrls } from '../../languageservice/utils/schemaUrls';
 import { SettingsState } from '../../yamlSettings';
-import { JSONSchemaDescription, JSONSchemaDescriptionExt, SchemaSelectionRequests } from '../../requestTypes';
+import {
+  JSONSchemaDescription,
+  JSONSchemaDescriptionExt,
+  SchemaSelectionRequests,
+  VSCodeContentRequest,
+} from '../../requestTypes';
 
 export class JSONSchemaSelection {
   constructor(
