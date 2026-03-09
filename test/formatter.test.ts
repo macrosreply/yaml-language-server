@@ -260,6 +260,28 @@ list:
 
         assert.equal(edits[0].newText, expected);
       });
+
+      it('Formatting does not add defensive leading semicolon for embedded template literal', async () => {
+        const content = `emit:
+  - name: eb-router-push
+    params:
+      path: \${{ \`/search/\${EB.utils.uuid()}\` }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `emit:
+  - name: eb-router-push
+    params:
+      path: \${{ \`/search/\${EB.utils.uuid()}\` }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
     });
   });
 });
