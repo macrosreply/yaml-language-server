@@ -6,11 +6,10 @@
 
 import { Range, Position, TextEdit, FormattingOptions } from 'vscode-languageserver-types';
 import { CustomFormatterOptions, LanguageSettings } from '../yamlLanguageService';
-import { Options } from 'prettier';
+import { Options, format, resolveConfig } from 'prettier';
 import * as yamlPlugin from 'prettier/plugins/yaml';
 import * as babelPlugin from 'prettier/plugins/babel';
 import * as estreePlugin from 'prettier/plugins/estree';
-import { format } from 'prettier/standalone';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 export class YAMLFormatter {
@@ -35,10 +34,14 @@ export class YAMLFormatter {
     try {
       const text = document.getText();
 
+      // Resolve prettier config from .prettierrc, .prettierrc.json, etc.
+      const filePath = document.uri.replace(/^file:\/\//, '');
+      const resolvedConfig = await resolveConfig(filePath);
+
       const prettierOptions: Options = {
         parser: 'yaml',
         plugins: [yamlPlugin, estreePlugin],
-
+        // Start with explicit options as fallback defaults
         // --- FormattingOptions ---
         tabWidth: (options.tabWidth as number) || options.tabSize,
 
@@ -49,11 +52,22 @@ export class YAMLFormatter {
         proseWrap: 'always' === options.proseWrap ? 'always' : 'never' === options.proseWrap ? 'never' : 'preserve',
         printWidth: options.printWidth,
         trailingComma: options.trailingComma === false ? 'none' : 'all',
+
+        // Then apply resolved config from prettier config files (takes precedence)
+        ...(resolvedConfig || {}),
       };
 
       const formatted = await format(text, prettierOptions);
-      const formattedWithInlineEmbeddedJs = await this.formatInlineEmbeddedJavaScriptExpressions(formatted, options);
-      const formattedWithEmbeddedJs = await this.formatEmbeddedJavaScriptBlocks(formattedWithInlineEmbeddedJs, options);
+      const formattedWithInlineEmbeddedJs = await this.formatInlineEmbeddedJavaScriptExpressions(
+        formatted,
+        options,
+        resolvedConfig
+      );
+      const formattedWithEmbeddedJs = await this.formatEmbeddedJavaScriptBlocks(
+        formattedWithInlineEmbeddedJs,
+        options,
+        resolvedConfig
+      );
 
       return [TextEdit.replace(Range.create(Position.create(0, 0), document.positionAt(text.length)), formattedWithEmbeddedJs)];
     } catch (error) {
@@ -63,7 +77,8 @@ export class YAMLFormatter {
 
   private async formatInlineEmbeddedJavaScriptExpressions(
     text: string,
-    options: Partial<FormattingOptions> & CustomFormatterOptions
+    options: Partial<FormattingOptions> & CustomFormatterOptions,
+    resolvedConfig: Options | null
   ): Promise<string> {
     const lines = text.split(/\r?\n/);
     const expressionPattern = /\$\{\{([\s\S]*?)\}\}/g;
@@ -89,7 +104,7 @@ export class YAMLFormatter {
         const inner = match[1];
         let replacement = original;
 
-        const formattedInner = await this.formatEmbeddedJavaScript(inner, options);
+        const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig);
         if (formattedInner && !formattedInner.includes('\n')) {
           replacement = `\${{ ${formattedInner.trim()} }}`;
         }
@@ -113,7 +128,8 @@ export class YAMLFormatter {
 
   private async formatEmbeddedJavaScriptBlocks(
     text: string,
-    options: Partial<FormattingOptions> & CustomFormatterOptions
+    options: Partial<FormattingOptions> & CustomFormatterOptions,
+    resolvedConfig: Options | null
   ): Promise<string> {
     const lines = text.split(/\r?\n/);
     const indentSize = ((options.tabWidth as number) || options.tabSize || YAMLFormatter.INDENT_FALLBACK) as number;
@@ -138,7 +154,7 @@ export class YAMLFormatter {
       }
 
       const inner = lines.slice(i + 1, closeIndex).join('\n');
-      const formattedInner = await this.formatEmbeddedJavaScript(inner, options);
+      const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig);
 
       if (!formattedInner) {
         continue;
@@ -156,7 +172,8 @@ export class YAMLFormatter {
 
   private async formatEmbeddedJavaScript(
     rawCode: string,
-    options: Partial<FormattingOptions> & CustomFormatterOptions
+    options: Partial<FormattingOptions> & CustomFormatterOptions,
+    resolvedConfig: Options | null
   ): Promise<string | null> {
     const normalized = this.dedent(rawCode).trim();
     if (!normalized) {
@@ -165,12 +182,15 @@ export class YAMLFormatter {
 
     try {
       const formatted = await format(normalized, {
+        // Always set parser and plugins (required for formatting to work)
         parser: 'babel',
         plugins: [babelPlugin, estreePlugin],
         tabWidth: (options.tabWidth as number) || options.tabSize,
         singleQuote: options.singleQuote,
-        semi: false,
         trailingComma: options.trailingComma === false ? 'none' : 'all',
+        // Then apply resolved config from prettier config files (takes precedence)
+        ...(resolvedConfig || {}),
+        semi: false,
       });
       let result = formatted.trimEnd();
 
