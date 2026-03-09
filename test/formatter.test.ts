@@ -194,6 +194,72 @@ list:
 `;
         assert.equal(edits[0].newText, expected);
       });
+
+      it('Formatting formats embedded JavaScript in block scalar expressions', async () => {
+        const content = `- name: eb-error
+  handler: |
+    \${{
+      $rootVars.error=$error.response?.data?.errorMessage??"error_unknown"
+    }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `- name: eb-error
+  handler: |
+    \${{
+      $rootVars.error = $error.response?.data?.errorMessage ?? 'error_unknown'
+    }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting formats embedded JavaScript in inline expressions', async () => {
+        const content = `handler: \${{$rootVars.error=$error.response?.data?.errorMessage??"error_unknown"}}\n`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `handler: \${{ $rootVars.error = $error.response?.data?.errorMessage ?? 'error_unknown' }}\n`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting does not add defensive leading semicolon for embedded arrow function expression', async () => {
+        const content = `- path: ""
+  redirect: |
+    \${{
+      from => {
+        return { path: \`/inbox/\${from.params.inboxId}/tasks\` }
+      }
+    }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `- path: ''
+  redirect: |
+    \${{
+      (from) => {
+        return { path: \`/inbox/\${from.params.inboxId}/tasks\` }
+      }
+    }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
     });
   });
 });
