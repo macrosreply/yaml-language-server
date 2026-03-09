@@ -38,6 +38,95 @@
     },
     "on": {
       "$ref": "#/definitions/on"
+    },
+    "formFields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "ebFormControl": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "type": ["string", "null"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "class": {
+                    "type": "string"
+                  },
+                  "spans": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "propertyNames": {
+                        "enum": ["xs", "sm", "md", "lg", "xl", "xxl"]
+                      },
+                      "type": "number"
+                    }
+                  },
+                  "props": {
+                    "$ref": "#/definitions/any"
+                  },
+                  "children": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "description": "Component children",
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/child"
+                        }
+                      }
+                    ]
+                  },
+                  "rules": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "depends": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "on": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "change": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/emit"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "required": ["name", "ebFormControl"]
+      }
     }
   },
   "additionalProperties": false,
@@ -897,9 +986,13 @@
           "type": "array",
           "items": {
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "name": {
                 "type": "string"
+              },
+              "debounce": {
+                "type": "number"
               },
               "handler": {
                 "anyOf": [
@@ -952,6 +1045,9 @@
                 "name": {
                   "type": "string"
                 },
+                "delay": {
+                  "type": "number"
+                },
                 "checks": {
                   "type": "array",
                   "items": {
@@ -970,6 +1066,9 @@
                 "properties": {
                   "name": {
                     "type": "string"
+                  },
+                  "delay": {
+                    "type": "number"
                   },
                   "depends": {
                     "type": "array",
