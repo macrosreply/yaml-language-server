@@ -22,9 +22,33 @@
           "type": {
             "type": "string",
             "enum": ["default", "custom"]
+          },
+          "securityPolicies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
+    },
+    "assets": {
+      "type": "object",
+      "properties": {
+        "noVersion": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "private": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "signal": {
       "type": "object",
@@ -141,6 +165,33 @@
             },
             "sort": {
               "type": "string"
+            },
+            "minPoolSize": {
+              "type": "number"
+            },
+            "maxPoolSize": {
+              "type": "number"
+            },
+            "incrPoolSize": {
+              "type": "number"
+            },
+            "decrPoolSize": {
+              "type": "number"
+            },
+            "validateConnection": {
+              "type": "boolean"
+            },
+            "connectionTimeout": {
+              "type": "number"
+            },
+            "connectionLifeTime": {
+              "type": "number"
+            },
+            "retryCount": {
+              "type": "number"
+            },
+            "retryDelay": {
+              "type": "number"
             }
           }
         }

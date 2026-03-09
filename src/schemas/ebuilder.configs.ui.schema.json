@@ -3,7 +3,124 @@
   "title": "eBuilder - Configs/UI",
   "description": "eBuilder - Configs/UI",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Application title"
+    },
+    "ui": {
+      "type": "string",
+      "description": "UI version or type"
+    },
+    "welcomeLogo": {
+      "type": "string",
+      "description": "Path to welcome logo image"
+    },
+    "welcomeLogoSize": {
+      "$ref": "#/definitions/appUIConfigWelcomeLogoSize"
+    },
+    "theme": {
+      "$ref": "#/definitions/appUIConfigsManifestTheme"
+    },
+    "favicon": {
+      "type": "string",
+      "description": "Path to favicon"
+    },
+    "manifest": {
+      "$ref": "#/definitions/appUIConfigsManifest"
+    }
+  },
   "additionalProperties": false,
-  "definitions": {}
+  "definitions": {
+    "appUIConfigWelcomeLogoSize": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "type": "string",
+          "description": "Logo width (e.g., '200px', '50%')"
+        },
+        "height": {
+          "type": "string",
+          "description": "Logo height (e.g., '200px', '50%')"
+        }
+      }
+    },
+    "appUIConfigsManifestTheme": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "type": "string",
+          "description": "Default theme name"
+        },
+        "support": {
+          "type": "array",
+          "description": "List of supported theme names",
+          "items": {
+            "type": "string"
+          }
+        },
+        "customThemes": {
+          "type": "array",
+          "description": "Custom theme configurations",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "appUIConfigsManifestIcons": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "favicon16": {
+          "type": "string",
+          "description": "Path to 16x16 favicon"
+        },
+        "favicon32": {
+          "type": "string",
+          "description": "Path to 32x32 favicon"
+        },
+        "favicon96": {
+          "type": "string",
+          "description": "Path to 96x96 favicon"
+        },
+        "favicon96Dark": {
+          "type": "string",
+          "description": "Path to 96x96 dark favicon"
+        },
+        "appleTouchIcon": {
+          "type": "string",
+          "description": "Path to Apple touch icon"
+        },
+        "webAppManifest192": {
+          "type": "string",
+          "description": "Path to 192x192 web app icon"
+        },
+        "webAppManifest512": {
+          "type": "string",
+          "description": "Path to 512x512 web app icon"
+        }
+      }
+    },
+    "appUIConfigsManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "themeColor": {
+          "type": "string",
+          "description": "Theme color (hex or color name)"
+        },
+        "backgroundColor": {
+          "type": "string",
+          "description": "Background color (hex or color name)"
+        },
+        "icons": {
+          "$ref": "#/definitions/appUIConfigsManifestIcons"
+        }
+      }
+    }
+  }
 }

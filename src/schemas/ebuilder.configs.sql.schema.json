@@ -81,6 +81,24 @@
           },
           "command": {
             "$ref": "#/definitions/engineTargetString"
+          },
+          "on": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/sqlOnCallback"
+                }
+              },
+              "error": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/sqlOnCallback"
+                }
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": false
@@ -165,13 +183,13 @@
               "success": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/definitions/taskOrMutation"
+                  "$ref": "#/definitions/sqlOnCallback"
                 }
               },
               "error": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/definitions/taskOrMutation"
+                  "$ref": "#/definitions/sqlOnCallback"
                 }
               }
             },
@@ -313,6 +331,14 @@
         "silentThrow": {
           "type": "boolean",
           "deprecated": true
+        },
+        "log": {
+          "type": "object",
+          "$ref": "#/definitions/sqlStepLog"
+        },
+        "elseLog": {
+          "type": "object",
+          "$ref": "#/definitions/sqlStepLog"
         }
       },
       "additionalProperties": false
@@ -329,6 +355,9 @@
         "key": {
           "type": "string"
         },
+        "log": {
+          "$ref": "#/definitions/sqlStepLog"
+        },
         "datasource": {
           "type": "string"
         },
@@ -344,8 +373,17 @@
         "command": {
           "$ref": "#/definitions/engineTargetString"
         },
+        "propType": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": ["string", "bool", "int", "double", "long", "decimal", "json"]
+          }
+        },
+        "emitResult": {
+          "type": "boolean"
+        },
         "save": {
-          "enum": ["last-insert-id", "output-params", "scalar", "first-row", "all-rows"]
+          "enum": ["last-insert-id", "output-params", "scalar", "first-row", "first-row-as-object", "all-rows", "column-values"]
         },
         "extra": {
           "type": "object",
@@ -414,9 +452,116 @@
         },
         "mutationParams": {
           "$ref": "#/definitions/any"
+        },
+        "query": {
+          "type": "string"
+        },
+        "queryParams": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "inputParams": {
+              "$ref": "#/definitions/any"
+            },
+            "take": {
+              "type": "integer"
+            },
+            "skip": {
+              "type": "integer"
+            },
+            "distinct": {
+              "type": "boolean"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "orders": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "by": {
+                    "type": "string"
+                  },
+                  "direction": {
+                    "enum": ["ASC", "DESC"]
+                  }
+                },
+                "required": ["by", "direction"]
+              }
+            },
+            "filters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "operator": {
+                    "enum": [
+                      "in",
+                      "nin",
+                      "e",
+                      "ne",
+                      "gt",
+                      "gte",
+                      "lt",
+                      "lte",
+                      "c",
+                      "sw",
+                      "nc",
+                      "null",
+                      "notNull",
+                      "nullOrEmpty",
+                      "notNullOrEmpty",
+                      "date_gt",
+                      "date_gte",
+                      "date_lt",
+                      "date_lte",
+                      "date_e",
+                      "date_ne",
+                      "date_gte_lte"
+                    ]
+                  },
+                  "value": {
+                    "$ref": "#/definitions/any"
+                  },
+                  "values": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/any"
+                    }
+                  }
+                },
+                "required": ["field", "operator"]
+              }
+            }
+          }
         }
       },
       "required": ["key"],
+      "additionalProperties": false
+    },
+    "sqlStepLog": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "enum": ["trace", "debug", "information", "warning", "error", "critical"]
+        },
+        "message": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "required": ["level"],
       "additionalProperties": false
     },
     "engineTargetString": {
@@ -471,7 +616,7 @@
       },
       "additionalProperties": false
     },
-    "taskOrMutation": {
+    "sqlOnCallback": {
       "type": "object",
       "properties": {
         "task": {
@@ -488,6 +633,9 @@
         },
         "checksBefore": {
           "$ref": "#/definitions/checks"
+        },
+        "log": {
+          "$ref": "#/definitions/sqlStepLog"
         }
       },
       "additionalProperties": false
@@ -526,7 +674,7 @@
           "type": "integer"
         },
         "callback": {
-          "$ref": "#/definitions/taskOrMutation"
+          "$ref": "#/definitions/sqlOnCallback"
         }
       },
       "additionalProperties": false

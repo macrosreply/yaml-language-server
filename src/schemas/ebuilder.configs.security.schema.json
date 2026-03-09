@@ -3,7 +3,498 @@
   "title": "eBuilder - Configs/Security",
   "description": "eBuilder - Configs/Security",
   "type": "object",
-  "properties": {},
+  "properties": {
+    "policies": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/securityPolicy"
+      }
+    }
+  },
   "additionalProperties": false,
-  "definitions": {}
+  "definitions": {
+    "securityPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "group": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["Superuser", "None", "Integrated", "Single", "Identity", "OpenId", "ApiKey", "SAML", "OfficeAddIn"]
+        },
+        "none": {
+          "$ref": "#/definitions/nonePolicyModeConfig"
+        },
+        "single": {
+          "$ref": "#/definitions/singlePolicyModeConfig"
+        },
+        "integrated": {
+          "$ref": "#/definitions/integratedPolicyModeConfig"
+        },
+        "saml": {
+          "$ref": "#/definitions/samlPolicyModeConfig"
+        },
+        "officeAddIn": {
+          "$ref": "#/definitions/officeAddInPolicyModeConfig"
+        },
+        "identity": {
+          "$ref": "#/definitions/identityPolicyModeConfig"
+        },
+        "apiKey": {
+          "$ref": "#/definitions/apiKeyPolicyModeConfig"
+        },
+        "openId": {
+          "$ref": "#/definitions/openIdPolicyModeConfig"
+        },
+        "additions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userContextAdditionsConfig"
+          }
+        },
+        "roles": {
+          "$ref": "#/definitions/taskOrQueryConfig"
+        },
+        "permissions": {
+          "$ref": "#/definitions/taskOrQueryConfig"
+        },
+        "roleMetaData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/taskOrQueryConfig"
+          }
+        }
+      }
+    },
+    "nonePolicyModeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowLoopbackOnly": {
+          "type": "boolean"
+        }
+      }
+    },
+    "singlePolicyModeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowLoopbackOnly": {
+          "type": "boolean"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        }
+      }
+    },
+    "integratedPolicyModeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "userNameLower": {
+          "type": "boolean"
+        },
+        "userNameWithDomain": {
+          "type": "boolean"
+        },
+        "profile": {
+          "$ref": "#/definitions/taskOrQueryConfig"
+        },
+        "upsertProfile": {
+          "$ref": "#/definitions/taskOrMutationConfig"
+        },
+        "ldap": {
+          "$ref": "#/definitions/ldapConfigs"
+        },
+        "autoRedirect": {
+          "type": "boolean"
+        },
+        "testUserName": {
+          "type": "string"
+        },
+        "testLdapProfile": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "samlPolicyModeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "userNameLower": {
+          "type": "boolean"
+        },
+        "userNameWithDomain": {
+          "type": "boolean"
+        },
+        "profile": {
+          "$ref": "#/definitions/taskOrQueryConfig"
+        },
+        "upsertProfile": {
+          "$ref": "#/definitions/taskOrMutationConfig"
+        },
+        "identityProvider": {
+          "$ref": "#/definitions/samlConfigs"
+        },
+        "autoRedirect": {
+          "type": "boolean"
+        }
+      }
+    },
+    "officeAddInPolicyModeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "userNameLower": {
+          "type": "boolean"
+        },
+        "userNameWithDomain": {
+          "type": "boolean"
+        },
+        "profile": {
+          "$ref": "#/definitions/taskOrQueryConfig"
+        },
+        "upsertProfile": {
+          "$ref": "#/definitions/taskOrMutationConfig"
+        },
+        "appId": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string"
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "officeEntries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forMSGraphAccess": {
+          "type": "boolean"
+        }
+      }
+    },
+    "identityPolicyModeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "userNameLower": {
+          "type": "boolean"
+        },
+        "profile": {
+          "$ref": "#/definitions/taskOrQueryConfig"
+        },
+        "passwordHashAlgorithm": {
+          "type": "string",
+          "enum": ["None", "Blowfish", "IterationsSaltHashPBKDF2"]
+        }
+      }
+    },
+    "apiKeyPolicyModeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiKeyPolicyModeConfigKey"
+          }
+        }
+      }
+    },
+    "apiKeyPolicyModeConfigKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {},
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "encrypted": {
+          "type": "boolean"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "openIdPolicyModeConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "issuer": {
+          "type": "string"
+        },
+        "issuers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "tokenUri": {
+          "type": "string"
+        },
+        "profileUri": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "jwksUri": {
+          "type": "string"
+        },
+        "claimsMap": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "userNameLower": {
+          "type": "boolean"
+        },
+        "userNameWithDomain": {
+          "type": "boolean"
+        },
+        "profile": {
+          "$ref": "#/definitions/taskOrQueryConfig"
+        },
+        "validation": {
+          "$ref": "#/definitions/openIdPolicyModeValidationConfig"
+        }
+      }
+    },
+    "openIdPolicyModeValidationConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lifetime": {
+          "type": "boolean"
+        },
+        "audience": {
+          "type": "boolean"
+        },
+        "validAudiences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issuer": {
+          "type": "boolean"
+        },
+        "issuerSigningKey": {
+          "type": "boolean"
+        },
+        "tokenReplay": {
+          "type": "boolean"
+        }
+      }
+    },
+    "userContextAdditionsConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "map": {
+          "type": "string",
+          "enum": ["PropertiesOfFirstRow", "ArrayOfValuesOfPropertyFromAllRows"]
+        },
+        "default": {}
+      }
+    },
+    "taskOrQueryConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "taskOrMutationConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task": {
+          "type": "string"
+        },
+        "mutation": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/sqlStepCheck"
+          }
+        },
+        "log": {
+          "$ref": "#/definitions/sqlStepLog"
+        },
+        "checksBefore": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/sqlStepCheck"
+          }
+        }
+      }
+    },
+    "samlConfigs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "acsEndpoint": {
+          "type": "string"
+        },
+        "entityId": {
+          "type": "string"
+        },
+        "signatureAlgorithm": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "string"
+        }
+      }
+    },
+    "ldapConfigs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "type": "integer"
+        },
+        "server": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        },
+        "encryptedPassword": {
+          "type": "boolean"
+        },
+        "attributesToAdditions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "sqlStepCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "if": {
+          "type": "string"
+        },
+        "param": {
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "enum": ["Equal", "NotEqual", "In", "NotIn", "Defined", "Undefined"]
+        },
+        "value": {},
+        "elseThrowErrorCode": {
+          "type": "integer"
+        },
+        "throwErrorCode": {
+          "type": "integer"
+        },
+        "throw": {
+          "type": "string"
+        },
+        "silentThrow": {
+          "type": "boolean"
+        },
+        "log": {
+          "$ref": "#/definitions/sqlStepLog"
+        },
+        "elseLog": {
+          "$ref": "#/definitions/sqlStepLog"
+        }
+      }
+    },
+    "sqlStepLog": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["Trace", "Debug", "Information", "Warning", "Error", "Critical", "None"]
+        },
+        "message": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
 }
