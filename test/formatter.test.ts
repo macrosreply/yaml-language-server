@@ -501,6 +501,36 @@ list:
 
         assert.equal(edits[0].newText, expected);
       });
+
+      it('Formatting collapses multi-line formatted inline expressions to single line', async () => {
+        const content = `rootMemo:
+  itemIds: \${{ ($route.query.itemIds ?? '').split(',')    .map((x) => parseInt(x)).filter((x) => !isNaN(x)) }}\n`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const output = edits[0].newText;
+
+        // Verify extra spaces are removed
+        assert.ok(!output.includes("split(',')    .map"), 'Should remove extra spaces');
+
+        // Verify it stays on a single line (inline)
+        const lines = output.split('\n');
+        const itemIdLine = lines.find((line) => line.includes('itemIds:'));
+        assert.ok(itemIdLine, 'Should have itemIds line');
+
+        // Should contain formatted expression on same line
+        assert.ok(itemIdLine.includes('${{ '), 'Should have opening delimiter');
+        assert.ok(itemIdLine.includes(' }}'), 'Should have closing delimiter');
+
+        // Verify method chain is properly formatted
+        assert.ok(itemIdLine.includes('.split'), 'Should have split method');
+        assert.ok(itemIdLine.includes('.map'), 'Should have map method');
+        assert.ok(itemIdLine.includes('.filter'), 'Should have filter method');
+      });
     });
   });
 });

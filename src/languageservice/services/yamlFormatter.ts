@@ -105,8 +105,10 @@ export class YAMLFormatter {
         let replacement = original;
 
         const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig);
-        if (formattedInner && !formattedInner.includes('\n')) {
-          replacement = `\${{ ${formattedInner.trim()} }}`;
+        if (formattedInner) {
+          // Collapse multi-line formatted output to single line for inline expressions
+          const collapsedInner = formattedInner.replace(/\s*\n\s*/g, ' ').trim();
+          replacement = `\${{ ${collapsedInner} }}`;
         }
 
         if (replacement !== original) {
