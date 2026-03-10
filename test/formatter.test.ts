@@ -690,6 +690,62 @@ value: |
         assert.equal(edits[0].newText, expected);
       });
 
+      it('Formatting handles nested ${variable} inside template expressions in SQL config files', async () => {
+        const content = `jsExpression: |
+  \${{
+    switch (\${functionId}) {
+      case 'showChecklist':
+        return $EB_CONSTANT(ACTION_IDX.WF_SHOW);
+      case 'editChecklist':
+        return $EB_CONSTANT(ACTION_IDX.WF_EDIT);
+      case 'showChecklistList':
+        return $EB_CONSTANT(ACTION_IDX.WF_SHOW_ASSIGNED_CHK);
+      case 'showToDo':
+        return $EB_CONSTANT(ACTION_IDX.WF_SHOW);
+      case 'editToDo':
+        return $EB_CONSTANT(ACTION_IDX.WF_EDIT);
+      case 'showWorkflowList':
+        return $EB_CONSTANT(ACTION_IDX.WF_SHOW_ASSIGNED_WF);
+      default:
+        throw new Error(\`Invalid functionId: \${\${functionId}}\`);
+    }
+  }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/configs/sql.workflow.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        const expected = `jsExpression: |
+  \${{
+    switch (\${functionId}) {
+      case 'showChecklist':
+        return $EB_CONSTANT(ACTION_IDX.WF_SHOW)
+      case 'editChecklist':
+        return $EB_CONSTANT(ACTION_IDX.WF_EDIT)
+      case 'showChecklistList':
+        return $EB_CONSTANT(ACTION_IDX.WF_SHOW_ASSIGNED_CHK)
+      case 'showToDo':
+        return $EB_CONSTANT(ACTION_IDX.WF_SHOW)
+      case 'editToDo':
+        return $EB_CONSTANT(ACTION_IDX.WF_EDIT)
+      case 'showWorkflowList':
+        return $EB_CONSTANT(ACTION_IDX.WF_SHOW_ASSIGNED_WF)
+      default:
+        throw new Error(\`Invalid functionId: \${\${functionId}}\`)
+    }
+  }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
       it('Formatting does NOT handle ${variable} syntax in non-SQL config files', async () => {
         const content = `key: test
 value: \${{ const x = \${myVar} + 1 }}

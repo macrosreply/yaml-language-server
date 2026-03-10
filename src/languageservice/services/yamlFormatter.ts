@@ -265,7 +265,9 @@ export class YAMLFormatter {
   /**
    * Replace ${variable_name} with indexed placeholders ($PLH0, $PLH1, etc.) for SQL config files.
    * This is used to temporarily transform invalid JS syntax to valid syntax before formatting.
-   * Important: This only replaces ${...} that are NOT inside template literals.
+   * Important: This replaces ${...} that are NOT template literal syntax, including:
+   *   - ${var} outside template literals
+   *   - ${var} inside template expressions like `text ${${var}}`
    * Returns the modified code and a map of placeholder -> original variable name.
    */
   private replaceSqlVariablePlaceholders(code: string): { code: string; replacements: Map<string, string> } {
@@ -276,6 +278,7 @@ export class YAMLFormatter {
     let inString = false;
     let stringChar = '';
     let escaped = false;
+    let templateExpressionDepth = 0; // Track depth inside template expressions ${...}
 
     for (let i = 0; i < code.length; i++) {
       const char = code[i];
@@ -296,11 +299,15 @@ export class YAMLFormatter {
       // Track template literals
       if (char === '`' && !inString) {
         inTemplateLiteral = !inTemplateLiteral;
+        if (!inTemplateLiteral) {
+          // Exiting template literal, reset expression depth
+          templateExpressionDepth = 0;
+        }
         result += char;
         continue;
       }
 
-      // Track regular strings
+      // Track regular strings (but not when inside template literals)
       if ((char === '"' || char === "'") && !inTemplateLiteral) {
         if (!inString) {
           inString = true;
@@ -313,29 +320,60 @@ export class YAMLFormatter {
         continue;
       }
 
-      // Replace ${...} only if not inside template literal or string
-      if (char === '$' && code[i + 1] === '{' && !inTemplateLiteral && !inString) {
-        // Find the closing brace
-        let depth = 0;
-        let j = i + 1;
-        while (j < code.length) {
-          if (code[j] === '{') depth++;
-          if (code[j] === '}') {
-            depth--;
-            if (depth === 0) break;
-          }
-          j++;
+      // Handle ${...} patterns
+      if (char === '$' && i + 1 < code.length && code[i + 1] === '{') {
+        // Check if this is the START of a template expression (not a custom variable to replace)
+        if (inTemplateLiteral && templateExpressionDepth === 0) {
+          // This is the opening of a template expression ${...}
+          // Don't replace, but start tracking the expression depth
+          templateExpressionDepth = 1;
+          result += '${';
+          i++; // Skip the '{'
+          continue;
         }
 
-        if (j < code.length && depth === 0) {
-          // Extract variable name
-          const varName = code.substring(i + 2, j);
-          const placeholder = `${YAMLFormatter.VARIABLE_PLACEHOLDER_PREFIX}${counter}`;
-          replacements.set(placeholder, varName);
-          result += placeholder;
-          counter++;
-          i = j; // Skip past the closing brace
-          continue;
+        // Determine if we should replace this ${...}
+        // - Replace if NOT in template literal and NOT in string
+        // - Replace if INSIDE a template expression (depth > 0)
+        const shouldReplace = (!inTemplateLiteral && !inString) || templateExpressionDepth > 0;
+
+        if (shouldReplace) {
+          // Find the closing brace
+          let depth = 0;
+          let j = i + 1;
+          while (j < code.length) {
+            if (code[j] === '{') depth++;
+            if (code[j] === '}') {
+              depth--;
+              if (depth === 0) break;
+            }
+            j++;
+          }
+
+          if (j < code.length && depth === 0) {
+            // Extract variable name
+            const varName = code.substring(i + 2, j);
+            const originalLength = j - i + 1; // Length of ${varName} including braces
+            const placeholder = `${YAMLFormatter.VARIABLE_PLACEHOLDER_PREFIX}${counter}`;
+
+            // Pad the placeholder to match original length so line-wrapping behavior is preserved
+            const paddedPlaceholder = placeholder.padEnd(originalLength, '_');
+
+            replacements.set(paddedPlaceholder, varName);
+            result += paddedPlaceholder;
+            counter++;
+            i = j; // Skip past the closing brace
+            continue;
+          }
+        }
+      }
+
+      // Track braces inside template expressions to know when we exit
+      if (inTemplateLiteral && templateExpressionDepth > 0) {
+        if (char === '{') {
+          templateExpressionDepth++;
+        } else if (char === '}') {
+          templateExpressionDepth--;
         }
       }
 
