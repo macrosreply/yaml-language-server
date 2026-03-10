@@ -78,6 +78,7 @@
     "lint-ci": "eslint -c .eslintrc.js -f @microsoft/eslint-formatter-sarif -o eslint-result.sarif --ext .ts src test",
     "prettier-fix": "npm run prettier --write .",
     "build": "npm run clean && npm run lint && npm run compile && npm run build:libs",
+    "prepare": "npm run build",
     "build:libs": "npm run compile:umd && npm run compile:esm",
     "compile:umd": "tsc -p ./tsconfig.umd.json",
     "compile:esm": "tsc -p ./tsconfig.esm.json",

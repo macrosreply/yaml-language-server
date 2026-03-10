@@ -70,11 +70,11 @@ export class SettingsState {
   schemaConfigurationSettings = [];
   yamlShouldValidate = true;
   yamlFormatterSettings = {
-    singleQuote: false,
+    singleQuote: true,
     bracketSpacing: true,
     proseWrap: 'preserve',
     printWidth: 80,
-    trailingComma: true,
+    trailingComma: false,
     enable: true,
   } as CustomFormatterOptions;
   yamlShouldHover = true;
