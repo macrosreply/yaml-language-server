@@ -202,9 +202,10 @@ export class YAMLFormatter {
       });
       let result = formatted.trimEnd();
 
-      // Prettier can add a defensive leading ';' for parenthesized expressions, arrays, and template literals.
+      // Prettier can add a defensive leading ';' for parenthesized expressions, arrays,
+      // template literals, and regex literals.
       // Embedded snippets are isolated, so that prefix can break downstream composition.
-      if (!normalized.trimStart().startsWith(';') && /^;(?=[[(`])/.test(result)) {
+      if (!normalized.trimStart().startsWith(';') && /^;(?=[[(`/])/.test(result)) {
         result = result.slice(1);
       }
 

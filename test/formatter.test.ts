@@ -283,6 +283,28 @@ list:
         assert.equal(edits[0].newText, expected);
       });
 
+      it('Formatting does not add defensive leading semicolon for embedded regex literal', async () => {
+        const content = `rules:
+  - required: true
+  - max: 256
+  - pattern: \${{ /^[a-zA-Z0-9_]+$/ }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `rules:
+  - required: true
+  - max: 256
+  - pattern: \${{ /^[a-zA-Z0-9_]+$/ }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
       it('Formatting removes all semicolons from multi-line embedded statements', async () => {
         const content = `on:
   emit:
