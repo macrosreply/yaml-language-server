@@ -597,6 +597,122 @@ props:
           assert.ok(nextLine.includes('$ctx.$parent.record.reviewedAndPaidIdx'), 'Should maintain argument');
         }
       });
+
+      it('Formatting handles ${variable} syntax in SQL config files (multi-line)', async () => {
+        const content = `key: bestandIdxs
+jsExpression: |
+  \${{
+      const bestandIdxs = \${allRowsBestandIdx}?.map(({ bestandIdx }) => bestandIdx) ?? [];
+      return {
+        arr: bestandIdxs.length > 0 ? bestandIdxs : null,
+        count: bestandIdxs.length
+      };
+  }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/configs/sql.test.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        const expected = `key: bestandIdxs
+jsExpression: |
+  \${{
+    const bestandIdxs =
+      \${allRowsBestandIdx}?.map(({ bestandIdx }) => bestandIdx) ?? []
+    return {
+      arr: bestandIdxs.length > 0 ? bestandIdxs : null,
+      count: bestandIdxs.length
+    }
+  }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting handles ${variable} syntax in SQL config files (inline)', async () => {
+        const content = `key: test
+value: \${{ const x = \${myVar} + 1; return x * 2 }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/configs/sql.example.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        const expected = `key: test
+value: \${{ const x = \${myVar} + 1
+return x * 2 }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting preserves ${} in template literals in SQL config files', async () => {
+        const content = `key: test
+value: |
+  \${{
+      const url = \`/api/\${endpoint}/\${id}\`;
+      const result = \${data}?.value ?? null;
+      return url + result;
+  }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/configs/sql.data.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        const expected = `key: test
+value: |
+  \${{
+    const url = \`/api/\${endpoint}/\${id}\`
+    const result = \${data}?.value ?? null
+    return url + result
+  }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting does NOT handle ${variable} syntax in non-SQL config files', async () => {
+        const content = `key: test
+value: \${{ const x = \${myVar} + 1 }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/test.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        // For non-SQL config files, ${myVar} is invalid syntax, so formatting should fail gracefully
+        // and the original content should be preserved
+        const expected = `key: test
+value: \${{ const x = \${myVar} + 1 }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
     });
   });
 });

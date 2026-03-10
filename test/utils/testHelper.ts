@@ -35,9 +35,9 @@ export function toFsPath(str: unknown): string {
 export const TEST_URI = 'file://~/Desktop/vscode-k8s/test.yaml';
 export const SCHEMA_ID = 'default_schema_id.yaml';
 
-export function setupTextDocument(content: string): TextDocument {
+export function setupTextDocument(content: string, uri?: string): TextDocument {
   yamlDocumentsCache.clear(); // clear cache
-  return TextDocument.create(TEST_URI, 'yaml', 0, content);
+  return TextDocument.create(uri || TEST_URI, 'yaml', 0, content);
 }
 
 export function setupSchemaIDTextDocument(content: string, customSchemaID?: string): TextDocument {

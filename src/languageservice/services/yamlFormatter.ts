@@ -16,11 +16,17 @@ export class YAMLFormatter {
   private formatterEnabled = true;
 
   private static readonly INDENT_FALLBACK = 2;
+  private static readonly VARIABLE_PLACEHOLDER_PREFIX = '$PLH';
 
   public configure(shouldFormat: LanguageSettings): void {
     if (shouldFormat) {
       this.formatterEnabled = shouldFormat.format;
     }
+  }
+
+  private isSqlConfigFile(uri: string): boolean {
+    // Check if the file path matches configs/sql.*.yml pattern
+    return /\/configs\/sql\.[^/]*\.yml$/.test(uri);
   }
 
   public async format(
@@ -61,16 +67,19 @@ export class YAMLFormatter {
       const formattedWithInlineEmbeddedJs = await this.formatInlineEmbeddedJavaScriptExpressions(
         formatted,
         options,
-        resolvedConfig
+        resolvedConfig,
+        document.uri
       );
       const formattedWithEmbeddedJs = await this.formatEmbeddedJavaScriptBlocks(
         formattedWithInlineEmbeddedJs,
         options,
-        resolvedConfig
+        resolvedConfig,
+        document.uri
       );
 
       return [TextEdit.replace(Range.create(Position.create(0, 0), document.positionAt(text.length)), formattedWithEmbeddedJs)];
     } catch (error) {
+      console.error('Error formatting document:\n' + document.uri.toString() + '\nError message:\n' + error);
       return [];
     }
   }
@@ -78,7 +87,8 @@ export class YAMLFormatter {
   private async formatInlineEmbeddedJavaScriptExpressions(
     text: string,
     options: Partial<FormattingOptions> & CustomFormatterOptions,
-    resolvedConfig: Options | null
+    resolvedConfig: Options | null,
+    documentUri: string
   ): Promise<string> {
     const lines = text.split(/\r?\n/);
     const expressionPattern = /\$\{\{([\s\S]*?)\}\}/g;
@@ -104,7 +114,7 @@ export class YAMLFormatter {
         const inner = match[1];
         let replacement = original;
 
-        const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig, true);
+        const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig, documentUri, true);
         if (formattedInner) {
           replacement = `\${{ ${formattedInner.trim()} }}`;
         }
@@ -129,7 +139,8 @@ export class YAMLFormatter {
   private async formatEmbeddedJavaScriptBlocks(
     text: string,
     options: Partial<FormattingOptions> & CustomFormatterOptions,
-    resolvedConfig: Options | null
+    resolvedConfig: Options | null,
+    documentUri: string
   ): Promise<string> {
     const lines = text.split(/\r?\n/);
     const indentSize = ((options.tabWidth as number) || options.tabSize || YAMLFormatter.INDENT_FALLBACK) as number;
@@ -156,7 +167,7 @@ export class YAMLFormatter {
       }
 
       const inner = lines.slice(i + 1, closeIndex).join('\n');
-      const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig, false);
+      const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig, documentUri, false);
 
       if (!formattedInner) {
         continue;
@@ -180,6 +191,7 @@ export class YAMLFormatter {
     rawCode: string,
     options: Partial<FormattingOptions> & CustomFormatterOptions,
     resolvedConfig: Options | null,
+    documentUri: string,
     isInline = false
   ): Promise<string | null> {
     const normalized = this.dedent(rawCode).trim();
@@ -187,8 +199,19 @@ export class YAMLFormatter {
       return null;
     }
 
+    // For SQL config files, replace ${variable_name} with indexed placeholders before formatting
+    const isSqlConfig = this.isSqlConfigFile(documentUri);
+    let codeToFormat = normalized;
+    let replacements: Map<string, string> = new Map();
+
+    if (isSqlConfig) {
+      const result = this.replaceSqlVariablePlaceholders(normalized);
+      codeToFormat = result.code;
+      replacements = result.replacements;
+    }
+
     try {
-      const formatted = await format(normalized, {
+      const formatted = await format(codeToFormat, {
         // Always set parser and plugins (required for formatting to work)
         parser: 'babel',
         plugins: [babelPlugin, estreePlugin],
@@ -210,9 +233,15 @@ export class YAMLFormatter {
         result = result.slice(1);
       }
 
+      // For SQL config files, revert indexed placeholders back to ${variable_name}
+      if (isSqlConfig) {
+        result = this.revertSqlVariablePlaceholders(result, replacements);
+      }
+
       return result;
-    } catch {
+    } catch (error) {
       // Keep original block unchanged when embedded code is incomplete or invalid.
+      console.error('Error formatting embedded JavaScript:\n' + codeToFormat + '\nError message:\n' + error);
       return null;
     }
   }
@@ -231,5 +260,101 @@ export class YAMLFormatter {
 
   private getLineIndent(line: string): number {
     return line.length - line.trimStart().length;
+  }
+
+  /**
+   * Replace ${variable_name} with indexed placeholders ($PLH0, $PLH1, etc.) for SQL config files.
+   * This is used to temporarily transform invalid JS syntax to valid syntax before formatting.
+   * Important: This only replaces ${...} that are NOT inside template literals.
+   * Returns the modified code and a map of placeholder -> original variable name.
+   */
+  private replaceSqlVariablePlaceholders(code: string): { code: string; replacements: Map<string, string> } {
+    const replacements = new Map<string, string>();
+    let counter = 0;
+    let result = '';
+    let inTemplateLiteral = false;
+    let inString = false;
+    let stringChar = '';
+    let escaped = false;
+
+    for (let i = 0; i < code.length; i++) {
+      const char = code[i];
+
+      // Handle escape sequences
+      if (escaped) {
+        result += char;
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        result += char;
+        continue;
+      }
+
+      // Track template literals
+      if (char === '`' && !inString) {
+        inTemplateLiteral = !inTemplateLiteral;
+        result += char;
+        continue;
+      }
+
+      // Track regular strings
+      if ((char === '"' || char === "'") && !inTemplateLiteral) {
+        if (!inString) {
+          inString = true;
+          stringChar = char;
+        } else if (char === stringChar) {
+          inString = false;
+          stringChar = '';
+        }
+        result += char;
+        continue;
+      }
+
+      // Replace ${...} only if not inside template literal or string
+      if (char === '$' && code[i + 1] === '{' && !inTemplateLiteral && !inString) {
+        // Find the closing brace
+        let depth = 0;
+        let j = i + 1;
+        while (j < code.length) {
+          if (code[j] === '{') depth++;
+          if (code[j] === '}') {
+            depth--;
+            if (depth === 0) break;
+          }
+          j++;
+        }
+
+        if (j < code.length && depth === 0) {
+          // Extract variable name
+          const varName = code.substring(i + 2, j);
+          const placeholder = `${YAMLFormatter.VARIABLE_PLACEHOLDER_PREFIX}${counter}`;
+          replacements.set(placeholder, varName);
+          result += placeholder;
+          counter++;
+          i = j; // Skip past the closing brace
+          continue;
+        }
+      }
+
+      result += char;
+    }
+
+    return { code: result, replacements };
+  }
+
+  /**
+   * Revert indexed placeholders ($PLH0, $PLH1, etc.) back to ${variable_name} for SQL config files.
+   */
+  private revertSqlVariablePlaceholders(code: string, replacements: Map<string, string>): string {
+    let result = code;
+    for (const [placeholder, varName] of replacements) {
+      // Use a simple string replace for each placeholder
+      // This is safe because placeholders are unique indexed values
+      result = result.split(placeholder).join(`\${${varName}}`);
+    }
+    return result;
   }
 }
