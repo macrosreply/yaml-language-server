@@ -282,6 +282,225 @@ list:
 
         assert.equal(edits[0].newText, expected);
       });
+
+      it('Formatting removes all semicolons from multi-line embedded statements', async () => {
+        const content = `on:
+  emit:
+    - name: eb-logged-out
+      handler: |
+        \${{
+          $rootVars.isLoggedIn = false
+          $rootVars.viewingAllOf = null;
+          $rootVars.currentSearchTerm = null;
+        }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `on:
+  emit:
+    - name: eb-logged-out
+      handler: |
+        \${{
+          $rootVars.isLoggedIn = false
+          $rootVars.viewingAllOf = null
+          $rootVars.currentSearchTerm = null
+        }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting handles complex multi-statement embedded blocks with control flow', async () => {
+        const content = `on:
+  emit:
+    - name: evt-init-current-user-storage
+      handler: |
+        \${{
+          if (a) return;
+          $rootVars.isLoggedIn = true;
+
+          $rootStore.currentUser.id = +EB.auth.userContextPolicies.eClient.id;
+          $rootStore.currentUser.username = EB.auth.userContextPolicies.eClient.username;
+          $rootStore.currentUser.firstName = EB.auth.userContextPolicies.eClient.firstName;
+          $rootStore.currentUser.lastName = EB.auth.userContextPolicies.eClient.lastName;
+          $rootStore.currentUser.divisions = EB.auth.userContextPolicies.eClient.additions?.divisions ?? [];
+          $rootStore.currentUser.inboxesCanBeAccessed = EB.auth.userContextPolicies.eClient.additions?.inboxesCanBeAccessed ?? [];
+
+          EB.emitter.emit('eb-signal-subscribe', { channel: ['tab-infos'] });
+          EB.emitter.emit('evt-load-current-user-rights');
+        }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `on:
+  emit:
+    - name: evt-init-current-user-storage
+      handler: |
+        \${{
+          if (a) return
+          $rootVars.isLoggedIn = true
+
+          $rootStore.currentUser.id = +EB.auth.userContextPolicies.eClient.id
+          $rootStore.currentUser.username = EB.auth.userContextPolicies.eClient.username
+          $rootStore.currentUser.firstName = EB.auth.userContextPolicies.eClient.firstName
+          $rootStore.currentUser.lastName = EB.auth.userContextPolicies.eClient.lastName
+          $rootStore.currentUser.divisions = EB.auth.userContextPolicies.eClient.additions?.divisions ?? []
+          $rootStore.currentUser.inboxesCanBeAccessed = EB.auth.userContextPolicies.eClient.additions?.inboxesCanBeAccessed ?? []
+
+          EB.emitter.emit('eb-signal-subscribe', { channel: ['tab-infos'] })
+          EB.emitter.emit('evt-load-current-user-rights')
+        }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting handles large embedded blocks with comments and multiple blank lines', async () => {
+        const content = `on:
+  emit:
+    - name: eb-logged-out
+      handler: |
+        \${{
+          $rootVars.isLoggedIn = false;
+          $rootVars.viewingAllOf = null;
+          $rootVars.currentSearchTerm = null;
+
+          $rootStore.currentUser.id = null;
+          $rootStore.currentUser.username = null;
+          $rootStore.currentUser.firstName = null;
+          $rootStore.currentUser.lastName = null;
+          $rootStore.currentUser.divisions = null;
+          $rootStore.currentUser.inboxesCanBeAccessed = null;
+          $rootStore.currentUser.rights = null;
+          // reset user preferences
+          $rootStore.currentUser.inboxViewConfigs.archive = null;
+          $rootStore.currentUser.inboxViewConfigs.open = null;
+          $rootStore.currentUser.inboxViewConfigs.reminder = null;
+          $rootStore.currentUser.inboxViewConfigs.done = null;
+          $rootStore.currentUser.inboxViewConfigs.set = null;
+          $rootStore.currentUser.inboxViewConfigs.case = null;
+          $rootStore.currentUser.inboxViewConfigs.searchDocument = null;
+          $rootStore.currentUser.inboxViewConfigs.searchCase = null;
+          $rootStore.currentUser.inboxViewConfigs.searchFile = null;
+
+          $rootStore.currentUser.fileViewConfigs.open = null;
+          $rootStore.currentUser.fileViewConfigs.reminder = null;
+          $rootStore.currentUser.fileViewConfigs.done = null;
+          $rootStore.currentUser.fileViewConfigs.all = null;
+          $rootStore.currentUser.fileViewConfigs.hidden = null;
+
+
+          EB.emitter.emit('eb-cache-invalid', { tags: ['*'] });
+          EB.emitter.emit('eb-state-store-remove', { key: ['*', '!current-user', '!right-view', '!global-document-viewer'] });
+
+          EB.storage.app().delete('local', '__eb_layout_sidebar_root-sidebar-menu_collapsed');
+        }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `on:
+  emit:
+    - name: eb-logged-out
+      handler: |
+        \${{
+          $rootVars.isLoggedIn = false
+          $rootVars.viewingAllOf = null
+          $rootVars.currentSearchTerm = null
+
+          $rootStore.currentUser.id = null
+          $rootStore.currentUser.username = null
+          $rootStore.currentUser.firstName = null
+          $rootStore.currentUser.lastName = null
+          $rootStore.currentUser.divisions = null
+          $rootStore.currentUser.inboxesCanBeAccessed = null
+          $rootStore.currentUser.rights = null
+          // reset user preferences
+          $rootStore.currentUser.inboxViewConfigs.archive = null
+          $rootStore.currentUser.inboxViewConfigs.open = null
+          $rootStore.currentUser.inboxViewConfigs.reminder = null
+          $rootStore.currentUser.inboxViewConfigs.done = null
+          $rootStore.currentUser.inboxViewConfigs.set = null
+          $rootStore.currentUser.inboxViewConfigs.case = null
+          $rootStore.currentUser.inboxViewConfigs.searchDocument = null
+          $rootStore.currentUser.inboxViewConfigs.searchCase = null
+          $rootStore.currentUser.inboxViewConfigs.searchFile = null
+
+          $rootStore.currentUser.fileViewConfigs.open = null
+          $rootStore.currentUser.fileViewConfigs.reminder = null
+          $rootStore.currentUser.fileViewConfigs.done = null
+          $rootStore.currentUser.fileViewConfigs.all = null
+          $rootStore.currentUser.fileViewConfigs.hidden = null
+
+          EB.emitter.emit('eb-cache-invalid', { tags: ['*'] })
+          EB.emitter.emit('eb-state-store-remove', { key: ['*', '!current-user', '!right-view', '!global-document-viewer'] })
+
+          EB.storage.app().delete('local', '__eb_layout_sidebar_root-sidebar-menu_collapsed')
+        }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting corrects indent of closing delimiter to match opening', async () => {
+        const content = `handler: |
+  \${{
+    $rootVars.isLoggedIn = false;
+    $rootVars.viewingAllOf = null;
+    }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `handler: |
+  \${{
+    $rootVars.isLoggedIn = false
+    $rootVars.viewingAllOf = null
+  }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting removes trailing spaces after closing delimiter', async () => {
+        const content = `handler: |
+  \${{
+    $rootVars.test = 1;
+    }}   
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `handler: |
+  \${{
+    $rootVars.test = 1
+  }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
     });
   });
 });

@@ -143,7 +143,9 @@ export class YAMLFormatter {
       let closeIndex = -1;
 
       for (let j = i + 1; j < lines.length; j++) {
-        if (lines[j].trim() === '}}' && this.getLineIndent(lines[j]) === openIndent) {
+        // Accept closing `}}` that is indented >= opening indent (required for YAML literal block)
+        // Must be indented at least as much as opening, or it won't be part of the block content
+        if (lines[j].trim() === '}}' && this.getLineIndent(lines[j]) >= openIndent) {
           closeIndex = j;
           break;
         }
@@ -163,7 +165,11 @@ export class YAMLFormatter {
       const indentPrefix = ' '.repeat(openIndent + indentSize);
       const formattedLines = formattedInner.split('\n').map((line) => (line.length ? `${indentPrefix}${line}` : ''));
 
+      // Re-indent closing delimiter to match opening delimiter
+      const closeIndent = ' '.repeat(openIndent);
+
       lines.splice(i + 1, closeIndex - i - 1, ...formattedLines);
+      lines[i + 1 + formattedLines.length] = `${closeIndent}}}`;
       i += formattedLines.length;
     }
 
