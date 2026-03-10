@@ -104,11 +104,9 @@ export class YAMLFormatter {
         const inner = match[1];
         let replacement = original;
 
-        const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig);
+        const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig, true);
         if (formattedInner) {
-          // Collapse multi-line formatted output to single line for inline expressions
-          const collapsedInner = formattedInner.replace(/\s*\n\s*/g, ' ').trim();
-          replacement = `\${{ ${collapsedInner} }}`;
+          replacement = `\${{ ${formattedInner.trim()} }}`;
         }
 
         if (replacement !== original) {
@@ -158,7 +156,7 @@ export class YAMLFormatter {
       }
 
       const inner = lines.slice(i + 1, closeIndex).join('\n');
-      const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig);
+      const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig, false);
 
       if (!formattedInner) {
         continue;
@@ -181,7 +179,8 @@ export class YAMLFormatter {
   private async formatEmbeddedJavaScript(
     rawCode: string,
     options: Partial<FormattingOptions> & CustomFormatterOptions,
-    resolvedConfig: Options | null
+    resolvedConfig: Options | null,
+    isInline = false
   ): Promise<string | null> {
     const normalized = this.dedent(rawCode).trim();
     if (!normalized) {
@@ -198,14 +197,16 @@ export class YAMLFormatter {
         trailingComma: options.trailingComma === false ? 'none' : 'all',
         // Then apply resolved config from prettier config files (takes precedence)
         ...(resolvedConfig || {}),
+        // For inline expressions, use a very high printWidth to prevent line wrapping
+        ...(isInline ? { printWidth: 9999 } : {}),
         semi: false,
       });
       let result = formatted.trimEnd();
 
       // Prettier can add a defensive leading ';' for parenthesized expressions, arrays,
-      // template literals, and regex literals.
+      // template literals, regex literals, and unary operators.
       // Embedded snippets are isolated, so that prefix can break downstream composition.
-      if (!normalized.trimStart().startsWith(';') && /^;(?=[[(`/])/.test(result)) {
+      if (!normalized.trimStart().startsWith(';') && /^;(?=[[(`/+\-!~])/.test(result)) {
         result = result.slice(1);
       }
 

@@ -305,6 +305,22 @@ list:
         assert.equal(edits[0].newText, expected);
       });
 
+      it('Formatting does not add defensive leading semicolon for embedded unary operator', async () => {
+        const content = `initialState:
+  businessNrTypeIdx: \${{ +$route.params.businessNrTypeIdx ?? null }}\n`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `initialState:
+  businessNrTypeIdx: \${{ +$route.params.businessNrTypeIdx ?? null }}\n`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
       it('Formatting removes all semicolons from multi-line embedded statements', async () => {
         const content = `on:
   emit:
@@ -552,6 +568,34 @@ list:
         assert.ok(itemIdLine.includes('.split'), 'Should have split method');
         assert.ok(itemIdLine.includes('.map'), 'Should have map method');
         assert.ok(itemIdLine.includes('.filter'), 'Should have filter method');
+      });
+
+      it('Formatting does not add spaces when collapsing multi-line function arguments', async () => {
+        const content = `name: eb-if
+props:
+  checks:
+    - \${{ [EB.constant.REVIEWED_PAID_IDX.REVIEWED, EB.constant.REVIEWED_PAID_IDX.REVIEWED_AND_PAID].includes($ctx.$parent.record.reviewedAndPaidIdx) }}\n`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const output = edits[0].newText;
+
+        // Verify no extra spaces were added around function arguments
+        assert.ok(!output.includes('includes( '), 'Should not add space after opening paren');
+        assert.ok(!output.includes(' )'), 'Should not add space before closing paren');
+
+        // Verify the expression stayed on one line
+        const lines = output.split('\n');
+        const checkLine = lines.find((line) => line.includes('checks:'));
+        if (checkLine) {
+          const nextLine = lines[lines.indexOf(checkLine) + 1];
+          assert.ok(nextLine.includes('.includes'), 'Should have includes method call');
+          assert.ok(nextLine.includes('$ctx.$parent.record.reviewedAndPaidIdx'), 'Should maintain argument');
+        }
       });
     });
   });

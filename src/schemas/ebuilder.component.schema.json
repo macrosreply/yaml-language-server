@@ -7,7 +7,24 @@
     "includes": {
       "description": "Root includes",
       "type": "object",
-      "additionalProperties": { "type": "string", "pattern": "^(.)?\\S+\\.(ya?ml|vue)$" }
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string", "pattern": "^(.)?\\S+\\.(ya?ml|vue)$" },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^(.)?\\S+\\.(ya?ml|vue)$"
+              },
+              "async": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      }
     },
     "singleton": {
       "description": "Singleton component",
@@ -47,6 +64,9 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "defaultValue": {
+            "$ref": "#/definitions/any"
           },
           "ebFormControl": {
             "oneOf": [
