@@ -640,6 +640,27 @@ props:
         assert.ok(output.includes(" ? 'eb-text' : 'eb-hidden'"), 'Should preserve spaces around ternary operators');
       });
 
+      it('Formatting does not add spaces before chained method calls in template literals', async () => {
+        const content = `params:
+  url: \${{ \`\${location.origin}\${location.pathname}#/documents/\${$event.documents.map((doc) => doc.documentId).join(',')}\` }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/sample.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        const output = edits[0].newText;
+        assert.ok(!output.includes('documents .map'), 'Should not add space before .map');
+        assert.ok(!output.includes(') .join'), 'Should not add space before .join');
+        assert.ok(output.includes('documents.map((doc) => doc.documentId).join'), 'Should keep chained calls compact');
+      });
+
       it('Formatting handles ${variable} syntax in SQL config files (multi-line)', async () => {
         const content = `key: bestandIdxs
 jsExpression: |

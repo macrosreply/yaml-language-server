@@ -132,6 +132,8 @@ export class YAMLFormatter {
               // Remove collapse-induced spaces just inside parentheses.
               .replace(/\(\s+/g, '(')
               .replace(/\s+\)/g, ')')
+              // Remove collapse-induced spaces before method/property chains.
+              .replace(/\s+\.(?=[A-Za-z_$])/g, '.')
               .trim();
           }
 
@@ -244,8 +246,9 @@ export class YAMLFormatter {
         trailingComma:
           resolvedConfig?.trailingComma ??
           (options.trailingComma === false ? 'none' : options.trailingComma === true ? 'all' : 'all'),
-        // For non-SQL inline expressions, use a very high printWidth to prevent line wrapping.
-        ...(isInline && !isSqlConfig && resolvedConfig?.printWidth === undefined ? { printWidth: 9999 } : {}),
+        // For non-SQL inline expressions, always force a very high printWidth
+        // to prevent unwanted line wrapping before inline reconstruction.
+        ...(isInline && !isSqlConfig ? { printWidth: 9999 } : {}),
         semi: false,
       });
       let result = formatted.trimEnd();
