@@ -97,7 +97,7 @@ describe('Formatter Tests', () => {
   lightened_bulb: 'illuminating',
 }
 `;
-        const edits = await parseSetup(content, { singleQuote: true });
+        const edits = await parseSetup(content, { singleQuote: true, printWidth: 20 });
         assert.equal(edits[0].newText, content);
       });
 
@@ -111,6 +111,7 @@ describe('Formatter Tests', () => {
 `;
         const edits = await parseSetup(content, {
           singleQuote: true,
+          printWidth: 20,
           trailingComma: false,
         });
         assert.equal(
@@ -256,6 +257,28 @@ list:
         return { path: \`/inbox/\${from.params.inboxId}/tasks\` }
       }
     }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting does not add defensive leading semicolon for embedded async arrow function', async () => {
+        const content = `ebFormControl: |
+  \${{
+    async ({ $dependencies }) => {}
+  }}
+`;
+
+        const edits = await parseSetup(content, {
+          tabSize: 2,
+          singleQuote: true,
+          trailingComma: false,
+        });
+
+        const expected = `ebFormControl: |
+  \${{
+    async ({ $dependencies }) => {}
+  }}
 `;
 
         assert.equal(edits[0].newText, expected);
@@ -596,6 +619,25 @@ props:
           assert.ok(nextLine.includes('.includes'), 'Should have includes method call');
           assert.ok(nextLine.includes('$ctx.$parent.record.reviewedAndPaidIdx'), 'Should maintain argument');
         }
+      });
+
+      it('Formatting preserves spaces around ternary operators in inline embedded expressions', async () => {
+        const content = `name: |
+  \${{ $dependencies.targetLanguages.length && $dependencies.targetLanguages.includes('fr') ? 'eb-text' : 'eb-hidden' }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/sample.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        const output = edits[0].newText;
+        assert.ok(output.includes(" ? 'eb-text' : 'eb-hidden'"), 'Should preserve spaces around ternary operators');
       });
 
       it('Formatting handles ${variable} syntax in SQL config files (multi-line)', async () => {

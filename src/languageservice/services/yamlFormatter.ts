@@ -40,27 +40,32 @@ export class YAMLFormatter {
     try {
       const text = document.getText();
 
-      // Resolve prettier config from .prettierrc, .prettierrc.json, etc.
-      const filePath = document.uri.replace(/^file:\/\//, '');
-      const resolvedConfig = await resolveConfig(filePath);
+      // Resolve prettier config only for real file URIs.
+      // Synthetic/test URIs should rely on explicit formatter options/defaults.
+      const resolvedConfig = document.uri.startsWith('file://')
+        ? await resolveConfig(document.uri.replace(/^file:\/\//, ''))
+        : null;
 
       const prettierOptions: Options = {
         parser: 'yaml',
         plugins: [yamlPlugin, estreePlugin],
-        // Start with explicit options as fallback defaults
-        // --- FormattingOptions ---
-        tabWidth: (options.tabWidth as number) || options.tabSize,
-
-        // --- CustomFormatterOptions ---
-        singleQuote: options.singleQuote,
-        bracketSpacing: options.bracketSpacing,
-        // 'preserve' is the default for Options.proseWrap. See also server.ts
-        proseWrap: 'always' === options.proseWrap ? 'always' : 'never' === options.proseWrap ? 'never' : 'preserve',
-        printWidth: options.printWidth,
-        trailingComma: options.trailingComma === false ? 'none' : 'all',
-
-        // Then apply resolved config from prettier config files (takes precedence)
         ...(resolvedConfig || {}),
+        // Prefer resolved Prettier config; use request options only as fallback.
+        tabWidth:
+          (resolvedConfig?.tabWidth as number) ??
+          (options.tabWidth as number) ??
+          options.tabSize ??
+          YAMLFormatter.INDENT_FALLBACK,
+        singleQuote: resolvedConfig?.singleQuote ?? options.singleQuote,
+        bracketSpacing: resolvedConfig?.bracketSpacing ?? options.bracketSpacing,
+        // 'preserve' is the default for Options.proseWrap. See also server.ts
+        proseWrap:
+          resolvedConfig?.proseWrap ??
+          (options.proseWrap === 'always' ? 'always' : options.proseWrap === 'never' ? 'never' : 'preserve'),
+        printWidth: (resolvedConfig?.printWidth as number) ?? options.printWidth,
+        trailingComma:
+          resolvedConfig?.trailingComma ??
+          (options.trailingComma === false ? 'none' : options.trailingComma === true ? 'all' : 'all'),
       };
 
       const formatted = await format(text, prettierOptions);
@@ -116,7 +121,21 @@ export class YAMLFormatter {
 
         const formattedInner = await this.formatEmbeddedJavaScript(inner, options, resolvedConfig, documentUri, true);
         if (formattedInner) {
-          replacement = `\${{ ${formattedInner.trim()} }}`;
+          let inlineInner = formattedInner.trim();
+
+          // Keep non-SQL inline expressions single-line even when Prettier breaks groups.
+          // SQL config files intentionally preserve line breaks for readability/placeholders.
+          if (!this.isSqlConfigFile(documentUri) && inlineInner.includes('\n')) {
+            inlineInner = inlineInner
+              .replace(/\s*\n\s*/g, ' ')
+              .replace(/\s+/g, ' ')
+              // Remove collapse-induced spaces just inside parentheses.
+              .replace(/\(\s+/g, '(')
+              .replace(/\s+\)/g, ')')
+              .trim();
+          }
+
+          replacement = `\${{ ${inlineInner} }}`;
         }
 
         if (replacement !== original) {
@@ -215,21 +234,26 @@ export class YAMLFormatter {
         // Always set parser and plugins (required for formatting to work)
         parser: 'babel',
         plugins: [babelPlugin, estreePlugin],
-        tabWidth: (options.tabWidth as number) || options.tabSize,
-        singleQuote: options.singleQuote,
-        trailingComma: options.trailingComma === false ? 'none' : 'all',
-        // Then apply resolved config from prettier config files (takes precedence)
         ...(resolvedConfig || {}),
-        // For inline expressions, use a very high printWidth to prevent line wrapping
-        ...(isInline ? { printWidth: 9999 } : {}),
+        tabWidth:
+          (resolvedConfig?.tabWidth as number) ??
+          (options.tabWidth as number) ??
+          options.tabSize ??
+          YAMLFormatter.INDENT_FALLBACK,
+        singleQuote: resolvedConfig?.singleQuote ?? options.singleQuote,
+        trailingComma:
+          resolvedConfig?.trailingComma ??
+          (options.trailingComma === false ? 'none' : options.trailingComma === true ? 'all' : 'all'),
+        // For non-SQL inline expressions, use a very high printWidth to prevent line wrapping.
+        ...(isInline && !isSqlConfig && resolvedConfig?.printWidth === undefined ? { printWidth: 9999 } : {}),
         semi: false,
       });
       let result = formatted.trimEnd();
 
-      // Prettier can add a defensive leading ';' for parenthesized expressions, arrays,
-      // template literals, regex literals, and unary operators.
-      // Embedded snippets are isolated, so that prefix can break downstream composition.
-      if (!normalized.trimStart().startsWith(';') && /^;(?=[[(`/+\-!~])/.test(result)) {
+      // Prettier can add a defensive leading ';' before certain expressions
+      // (for example: parenthesized, arrays, template literals, regex, async/unary starts).
+      // Embedded snippets are isolated, so that prefixed semicolon can break downstream composition.
+      if (!normalized.trimStart().startsWith(';') && result.startsWith(';')) {
         result = result.slice(1);
       }
 
