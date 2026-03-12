@@ -17,6 +17,7 @@ export class YAMLFormatter {
 
   private static readonly INDENT_FALLBACK = 2;
   private static readonly VARIABLE_PLACEHOLDER_PREFIX = '$PLH';
+  private static readonly ESCAPED_VARIABLE_PLACEHOLDER_PREFIX = '$ESCPLH';
 
   public configure(shouldFormat: LanguageSettings): void {
     if (shouldFormat) {
@@ -224,11 +225,14 @@ export class YAMLFormatter {
     const isSqlConfig = this.isSqlConfigFile(documentUri);
     let codeToFormat = normalized;
     let replacements: Map<string, string> = new Map();
+    let escapedReplacements: Map<string, string> = new Map();
 
     if (isSqlConfig) {
-      const result = this.replaceSqlVariablePlaceholders(normalized);
+      const escapedResult = this.replaceEscapedSqlVariablePlaceholders(normalized);
+      const result = this.replaceSqlVariablePlaceholders(escapedResult.code);
       codeToFormat = result.code;
       replacements = result.replacements;
+      escapedReplacements = escapedResult.replacements;
     }
 
     try {
@@ -263,6 +267,7 @@ export class YAMLFormatter {
       // For SQL config files, revert indexed placeholders back to ${variable_name}
       if (isSqlConfig) {
         result = this.revertSqlVariablePlaceholders(result, replacements);
+        result = this.revertEscapedSqlVariablePlaceholders(result, escapedReplacements);
       }
 
       return result;
@@ -271,6 +276,24 @@ export class YAMLFormatter {
       console.error('Error formatting embedded JavaScript:\n' + codeToFormat + '\nError message:\n' + error);
       return null;
     }
+  }
+
+  /**
+   * Replace escaped SQL placeholders (\${var}) with temporary placeholders so Prettier
+   * doesn't normalize them to ${var}. Applies only to SQL config files.
+   */
+  private replaceEscapedSqlVariablePlaceholders(code: string): { code: string; replacements: Map<string, string> } {
+    const replacements = new Map<string, string>();
+    let counter = 0;
+
+    const result = code.replace(/\\\$\{([^{}]+)\}/g, (match) => {
+      const placeholder = `${YAMLFormatter.ESCAPED_VARIABLE_PLACEHOLDER_PREFIX}${counter}`;
+      replacements.set(placeholder, match);
+      counter++;
+      return placeholder;
+    });
+
+    return { code: result, replacements };
   }
 
   private dedent(text: string): string {
@@ -419,6 +442,14 @@ export class YAMLFormatter {
       // Use a simple string replace for each placeholder
       // This is safe because placeholders are unique indexed values
       result = result.split(placeholder).join(`\${${varName}}`);
+    }
+    return result;
+  }
+
+  private revertEscapedSqlVariablePlaceholders(code: string, replacements: Map<string, string>): string {
+    let result = code;
+    for (const [placeholder, original] of replacements) {
+      result = result.split(placeholder).join(original);
     }
     return result;
   }

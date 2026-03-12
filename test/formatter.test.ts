@@ -721,6 +721,40 @@ return x * 2 }}
         assert.equal(edits[0].newText, expected);
       });
 
+      it('Formatting preserves escaped ${variable} syntax in SQL string literals', async () => {
+        const content = `key: registerIdxFilter
+jsExpression: |
+  \${{
+    if (\${registerIdx} != null) {
+      return 'AND EC_DOKTYP.REGISTER_IDX = \\\${registerIdx}'
+    }
+    return ''
+  }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/configs/sql.filters.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        const expected = `key: registerIdxFilter
+jsExpression: |
+  \${{
+    if (\${registerIdx} != null) {
+      return 'AND EC_DOKTYP.REGISTER_IDX = \\\${registerIdx}'
+    }
+    return ''
+  }}
+`;
+
+        assert.equal(edits[0].newText, expected);
+      });
+
       it('Formatting preserves ${} in template literals in SQL config files', async () => {
         const content = `key: test
 value: |
