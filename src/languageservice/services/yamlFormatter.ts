@@ -18,6 +18,7 @@ export class YAMLFormatter {
   private static readonly INDENT_FALLBACK = 2;
   private static readonly VARIABLE_PLACEHOLDER_PREFIX = '$PLH';
   private static readonly ESCAPED_VARIABLE_PLACEHOLDER_PREFIX = '$ESCPLH';
+  private static readonly SQL_FUNCTION_PLACEHOLDER_PREFIX = 'SQLFPLH';
 
   public configure(shouldFormat: LanguageSettings): void {
     if (shouldFormat) {
@@ -226,13 +227,16 @@ export class YAMLFormatter {
     let codeToFormat = normalized;
     let replacements: Map<string, string> = new Map();
     let escapedReplacements: Map<string, string> = new Map();
+    let functionReplacements: Map<string, string> = new Map();
 
     if (isSqlConfig) {
       const escapedResult = this.replaceEscapedSqlVariablePlaceholders(normalized);
-      const result = this.replaceSqlVariablePlaceholders(escapedResult.code);
+      const functionResult = this.replaceSqlSpecialFunctionPlaceholders(escapedResult.code);
+      const result = this.replaceSqlVariablePlaceholders(functionResult.code);
       codeToFormat = result.code;
       replacements = result.replacements;
       escapedReplacements = escapedResult.replacements;
+      functionReplacements = functionResult.replacements;
     }
 
     try {
@@ -267,6 +271,7 @@ export class YAMLFormatter {
       // For SQL config files, revert indexed placeholders back to ${variable_name}
       if (isSqlConfig) {
         result = this.revertSqlVariablePlaceholders(result, replacements);
+        result = this.revertSqlSpecialFunctionPlaceholders(result, functionReplacements);
         result = this.revertEscapedSqlVariablePlaceholders(result, escapedReplacements);
       }
 
@@ -294,6 +299,97 @@ export class YAMLFormatter {
     });
 
     return { code: result, replacements };
+  }
+
+  /**
+   * Replace SQL special function placeholders ($EB_CONSTANT(...), $EB_CONTEXT(...))
+   * with temporary tokens so Prettier does not reflow/break them.
+   */
+  private replaceSqlSpecialFunctionPlaceholders(code: string): { code: string; replacements: Map<string, string> } {
+    const replacements = new Map<string, string>();
+    let counter = 0;
+    let result = '';
+    let i = 0;
+
+    while (i < code.length) {
+      const isConstant = code.startsWith('$EB_CONSTANT(', i);
+      const isContext = code.startsWith('$EB_CONTEXT(', i);
+
+      if (!isConstant && !isContext) {
+        result += code[i];
+        i++;
+        continue;
+      }
+
+      const openParenIndex = code.indexOf('(', i);
+      const closeParenIndex = this.findMatchingParenIndex(code, openParenIndex);
+
+      if (closeParenIndex === -1) {
+        // If placeholder is malformed/incomplete, keep original text unchanged.
+        result += code[i];
+        i++;
+        continue;
+      }
+
+      const fullCall = code.slice(i, closeParenIndex + 1);
+      const placeholder = `${YAMLFormatter.SQL_FUNCTION_PLACEHOLDER_PREFIX}${counter}`;
+      replacements.set(placeholder, fullCall);
+      result += placeholder;
+      counter++;
+      i = closeParenIndex + 1;
+    }
+
+    return { code: result, replacements };
+  }
+
+  private findMatchingParenIndex(code: string, openParenIndex: number): number {
+    if (openParenIndex < 0 || openParenIndex >= code.length || code[openParenIndex] !== '(') {
+      return -1;
+    }
+
+    let depth = 0;
+    let inString = false;
+    let stringChar = '';
+    let escaped = false;
+
+    for (let i = openParenIndex; i < code.length; i++) {
+      const char = code[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (inString) {
+        if (char === stringChar) {
+          inString = false;
+          stringChar = '';
+        }
+        continue;
+      }
+
+      if (char === '"' || char === "'") {
+        inString = true;
+        stringChar = char;
+        continue;
+      }
+
+      if (char === '(') {
+        depth++;
+      } else if (char === ')') {
+        depth--;
+        if (depth === 0) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
   }
 
   private dedent(text: string): string {
@@ -437,18 +533,30 @@ export class YAMLFormatter {
    * Revert indexed placeholders ($PLH0, $PLH1, etc.) back to ${variable_name} for SQL config files.
    */
   private revertSqlVariablePlaceholders(code: string, replacements: Map<string, string>): string {
-    let result = code;
+    const restoreMap = new Map<string, string>();
     for (const [placeholder, varName] of replacements) {
-      // Use a simple string replace for each placeholder
-      // This is safe because placeholders are unique indexed values
-      result = result.split(placeholder).join(`\${${varName}}`);
+      restoreMap.set(placeholder, `\${${varName}}`);
     }
-    return result;
+    return this.restorePlaceholders(code, restoreMap);
   }
 
   private revertEscapedSqlVariablePlaceholders(code: string, replacements: Map<string, string>): string {
+    return this.restorePlaceholders(code, replacements);
+  }
+
+  private revertSqlSpecialFunctionPlaceholders(code: string, replacements: Map<string, string>): string {
+    return this.restorePlaceholders(code, replacements);
+  }
+
+  /**
+   * Restore placeholder tokens in a collision-safe way.
+   * Keys are processed by descending length to avoid prefix collisions
+   * (e.g. SQLFPLH1 accidentally matching SQLFPLH10).
+   */
+  private restorePlaceholders(code: string, replacements: Map<string, string>): string {
     let result = code;
-    for (const [placeholder, original] of replacements) {
+    const sortedEntries = Array.from(replacements.entries()).sort((a, b) => b[0].length - a[0].length);
+    for (const [placeholder, original] of sortedEntries) {
       result = result.split(placeholder).join(original);
     }
     return result;

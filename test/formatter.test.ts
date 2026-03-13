@@ -843,6 +843,92 @@ value: |
         assert.equal(edits[0].newText, expected);
       });
 
+      it('Formatting preserves $EB_CONSTANT/$EB_CONTEXT placeholders on one line in SQL config files', async () => {
+        const content = `jsExpression: |
+  \${{
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.PEKA)) {
+      return \`AND eca.geschnotyp_idx IN (\${$EB_CONSTANT(GESCHNOTYP.PEKA_VERSNR)}, \${$EB_CONSTANT(GESCHNOTYP.PEKA_KASSENNR)})\`;
+    }
+    if (\${ctxValue} === $EB_CONTEXT(USER_ID)) {
+      return 'ok';
+    }
+  }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/configs/sql.placeholders.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false },
+          textDocument: testTextDocument,
+        });
+
+        const output = edits[0].newText;
+        assert.ok(output.includes('$EB_CONSTANT(GESCHNOTYP.PEKA_VERSNR)'), 'Should preserve first $EB_CONSTANT placeholder');
+        assert.ok(output.includes('$EB_CONSTANT(GESCHNOTYP.PEKA_KASSENNR)'), 'Should preserve second $EB_CONSTANT placeholder');
+        assert.ok(output.includes('$EB_CONTEXT(USER_ID)'), 'Should preserve $EB_CONTEXT placeholder');
+        assert.ok(!output.includes('$EB_CONSTANT(\n'), 'Should not break $EB_CONSTANT across lines');
+        assert.ok(!output.includes('$EB_CONTEXT(\n'), 'Should not break $EB_CONTEXT across lines');
+      });
+
+      it('Formatting does not corrupt SQL placeholders when many $EB_CONSTANT tokens exist', async () => {
+        const content = `jsExpression: |
+  \${{
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.EDOSSIER)) {
+      return \`AND eca.geschnotyp_idx = \${$EB_CONSTANT(GESCHNOTYP.PERSNO)}\`;
+    }
+
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.EDOSSIER_SOBA)) {
+      return \`AND eca.geschnotyp_idx = \${$EB_CONSTANT(GESCHNOTYP.PERSNO_SOBA)}\`;
+    }
+
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.PEKA)) {
+      return \`AND eca.geschnotyp_idx IN (\${$EB_CONSTANT(GESCHNOTYP.PEKA_VERSNR)}, \${$EB_CONSTANT(GESCHNOTYP.PEKA_KASSENNR)})\`;
+    }
+
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.BROKER)) {
+      return \`AND eca.geschnotyp_idx IN (\${$EB_CONSTANT(GESCHNOTYP.BRO_HBM)}, \${$EB_CONSTANT(GESCHNOTYP.BRO_PERS)})\`;
+    }
+
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.SAP)) {
+      return \`AND eca.geschnotyp_idx = \${$EB_CONSTANT(GESCHNOTYP.SAP_BK)}\`;
+    }
+
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.KLMGT)) {
+      return \`AND eca.geschnotyp_idx = \${$EB_CONSTANT(GESCHNOTYP.KLMGT)}\`;
+    }
+
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.HYPO)) {
+      return \`AND eca.geschnotyp_idx = \${$EB_CONSTANT(GESCHNOTYP.HYPO_DOSSIER)}\`;
+    }
+
+    if (\${userView} === $EB_CONSTANT(USER_VIEW.BAM)) {
+      return \`AND eca.geschnotyp_idx = \${$EB_CONSTANT(GESCHNOTYP.BAM)}\`;
+    }
+
+    return \`AND eca.geschnotyp_idx NOT IN (\${$EB_CONSTANT(GESCHNOTYP.PERSNO)}, \${$EB_CONSTANT(GESCHNOTYP.PERSNO_SOBA)}, \${$EB_CONSTANT(GESCHNOTYP.PEKA_VERSNR)}, \${$EB_CONSTANT(GESCHNOTYP.PEKA_KASSENNR)}, \${$EB_CONSTANT(GESCHNOTYP.BRO_HBM)}, \${$EB_CONSTANT(GESCHNOTYP.SAP_BK)}, \${$EB_CONSTANT(GESCHNOTYP.KLMGT)}, \${$EB_CONSTANT(GESCHNOTYP.HYPO_DOSSIER)}, \${$EB_CONSTANT(GESCHNOTYP.BRO_PERS)}, \${$EB_CONSTANT(GESCHNOTYP.BAM)})\`;
+  }}
+`;
+
+        const testTextDocument = setupTextDocument(content, 'file:///workspace/configs/sql.large-placeholders.yml');
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = { singleQuote: true, trailingComma: false, printWidth: 80 };
+
+        const edits = await languageHandler.formatterHandler({
+          options: { tabSize: 2, insertSpaces: true, singleQuote: true, trailingComma: false, printWidth: 80 },
+          textDocument: testTextDocument,
+        });
+
+        const output = edits[0].newText;
+        assert.ok(!output.includes(')000'), 'Should not append numeric suffixes like 000');
+        assert.ok(!output.includes(')111'), 'Should not append numeric suffixes like 111');
+        assert.ok(output.includes('$EB_CONSTANT(USER_VIEW.SAP)'), 'Should preserve USER_VIEW.SAP placeholder');
+        assert.ok(output.includes('$EB_CONSTANT(GESCHNOTYP.SAP_BK)'), 'Should preserve GESCHNOTYP.SAP_BK placeholder');
+      });
+
       it('Formatting does NOT handle ${variable} syntax in non-SQL config files', async () => {
         const content = `key: test
 value: \${{ const x = \${myVar} + 1 }}
