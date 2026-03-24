@@ -441,6 +441,9 @@
         "defaultResult": {
           "$ref": "#/definitions/any"
         },
+        "omitResult": {
+          "type": "boolean"
+        },
         "task": {
           "type": "string"
         },

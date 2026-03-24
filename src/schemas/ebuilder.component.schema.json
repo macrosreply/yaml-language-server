@@ -9,7 +9,10 @@
       "type": "object",
       "additionalProperties": {
         "anyOf": [
-          { "type": "string", "pattern": "^(.)?\\S+\\.(ya?ml|vue)$" },
+          {
+            "type": "string",
+            "pattern": "^(.)?\\S+\\.(ya?ml|vue)$"
+          },
           {
             "type": "object",
             "additionalProperties": false,
@@ -59,107 +62,7 @@
     "formFields": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "defaultValue": {
-            "$ref": "#/definitions/any"
-          },
-          "ebFormControl": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "label": {
-                    "type": ["string", "null"]
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "class": {
-                    "type": "string"
-                  },
-                  "spans": {
-                    "type": "object",
-                    "properties": {
-                      "xs": {
-                        "type": "number"
-                      },
-                      "sm": {
-                        "type": "number"
-                      },
-                      "md": {
-                        "type": "number"
-                      },
-                      "lg": {
-                        "type": "number"
-                      },
-                      "xl": {
-                        "type": "number"
-                      },
-                      "xxl": {
-                        "type": "number"
-                      }
-                    }
-                  },
-                  "props": {
-                    "$ref": "#/definitions/any"
-                  },
-                  "children": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "description": "Component children",
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/definitions/child"
-                        }
-                      }
-                    ]
-                  },
-                  "rules": {
-                    "type": "array",
-                    "items": {
-                      "type": "object"
-                    }
-                  }
-                }
-              }
-            ]
-          },
-          "depends": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "on": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "change": {
-                "oneOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "$ref": "#/definitions/emit"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "required": ["name", "ebFormControl"]
+        "$ref": "#/definitions/formField"
       }
     }
   },
@@ -277,98 +180,10 @@
           "type": "string"
         },
         "props": {
-          "$ref": "#/definitions/componentProps"
+          "$ref": "#/definitions/any"
         },
         "children": {
-          "anyOf": [
-            { "type": "string" },
-            {
-              "description": "Component children",
-              "type": "array",
-              "items": { "$ref": "#/definitions/child" }
-            }
-          ]
-        }
-      }
-    },
-    "ebChildren": {
-      "description": "eBuilder builtin component",
-      "type": "object",
-      "properties": {
-        "name": {
-          "enum": [
-            "eb-config-provider",
-            "eb-vnode",
-            "eb-button",
-            "eb-alert",
-            "eb-router-link",
-            "eb-brand-logo",
-            "eb-breadcrumb",
-            "eb-router-prompt",
-            "eb-if",
-            "eb-hover-overlay",
-            "eb-card",
-            "eb-col",
-            "eb-collapse",
-            "eb-descriptions",
-            "eb-for-in",
-            "eb-form",
-            "eb-icon",
-            "eb-list",
-            "eb-menu",
-            "eb-context-menu",
-            "eb-modal",
-            "eb-router-view",
-            "eb-row",
-            "eb-tab-content",
-            "eb-table",
-            "eb-tabs",
-            "eb-typography",
-            "eb-user-menu",
-            "eb-user-unauthorized",
-            "eb-image",
-            "eb-tree",
-            "eb-loading",
-            "eb-monaco-viewer",
-            "eb-files-drop",
-            "eb-pdf-viewer",
-            "eb-layout-master",
-            "eb-layout-master-tabs",
-            "eb-layout-sidebar",
-            "eb-layout-sidebar-menu",
-            "eb-layout-main",
-            "eb-cell-form-item",
-            "eb-checkbox",
-            "eb-datetime",
-            "eb-file",
-            "eb-hidden",
-            "eb-html-editor",
-            "eb-number",
-            "eb-password",
-            "eb-select",
-            "eb-select-search",
-            "eb-text",
-            "eb-textarea",
-            "eb-transfer",
-            "eb-radio",
-            "eb-monaco-editor"
-          ]
-        },
-        "slot": {
-          "type": "string"
-        },
-        "props": {
-          "$ref": "#/definitions/componentProps"
-        },
-        "children": {
-          "anyOf": [
-            { "type": "string" },
-            {
-              "description": "Component children",
-              "type": "array",
-              "items": { "$ref": "#/definitions/child" }
-            }
-          ]
+          "$ref": "#/definitions/children"
         }
       }
     },
@@ -382,33 +197,3113 @@
           "type": "string"
         },
         "props": {
-          "type": ["object", "string"]
+          "$ref": "#/definitions/any"
         },
         "children": {
+          "$ref": "#/definitions/children"
+        }
+      }
+    },
+    "ebChildrenPropsEbConfigProvider": {
+      "type": "object",
+      "properties": {
+        "defaultProps": {
+          "type": "object",
+          "properties": {
+            "ebTable": {
+              "type": "object",
+              "properties": {
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "size": {
+                      "type": "number"
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "hide": {
+                      "type": "boolean"
+                    },
+                    "noLabel": {
+                      "type": "boolean"
+                    },
+                    "autoHide": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "enableExcelExport": {
+                  "type": "boolean"
+                },
+                "enableClearAllFilters": {
+                  "type": "boolean"
+                },
+                "multipleColsSort": {
+                  "type": "boolean"
+                },
+                "useMaxContentWidth": {
+                  "type": "boolean"
+                },
+                "mobileSafe": {
+                  "type": "boolean"
+                },
+                "columnMinWidth": {
+                  "type": "number"
+                },
+                "columnsResizableByDefault": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "ebSelect": {
+              "type": "object",
+              "properties": {
+                "showRefresh": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "ebDescriptions": {
+              "type": "object",
+              "properties": {
+                "mobileSafe": {
+                  "type": "boolean"
+                },
+                "colon": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "ebForm": {
+              "type": "object",
+              "properties": {
+                "showRequiredMark": {
+                  "type": "boolean"
+                },
+                "colon": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "ebBreadcrumb": {
+              "type": "object",
+              "properties": {
+                "updateDocumentTitle": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbVnode": {
+      "type": "object",
+      "properties": {
+        "nodes": {
           "anyOf": [
-            { "type": "string" },
             {
-              "description": "Component children",
-              "type": "array",
-              "items": { "$ref": "#/definitions/child" }
+              "type": "array"
+            },
+            {
+              "type": "string",
+              "description": "Function signature: () => VNode[]"
             }
           ]
         }
       }
     },
+    "ebChildrenPropsEbButton": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["primary", "ghost", "dashed", "link", "text", "default"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "size": {
+          "enum": ["large", "middle", "small"]
+        },
+        "danger": {
+          "type": "boolean"
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "authorize": {
+          "$ref": "#/definitions/authorize"
+        },
+        "dropdown": {
+          "type": "object",
+          "properties": {
+            "placement": {
+              "enum": ["bottomLeft", "bottomCenter", "bottomRight", "topLeft", "topCenter", "topRight"]
+            },
+            "trigger": {
+              "enum": ["click", "hover", "contextmenu"]
+            },
+            "noArrowIcon": {
+              "type": "boolean"
+            },
+            "items": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                {
+                  "type": "string",
+                  "description": "Function signature: () => EBButtonDropdownItem[]"
+                }
+              ]
+            },
+            "overlayClass": {
+              "type": "string"
+            },
+            "selectedKeys": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "click": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: (e?: unknown) => void"
+            },
+            "longPress": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: () => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbAlert": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["success", "info", "warning", "error"]
+        },
+        "visible": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbRouterLink": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "authorize": {
+          "$ref": "#/definitions/authorize"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "click": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event?: unknown) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbBrandLogo": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "type": "number"
+        },
+        "color": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbBreadcrumb": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "hide": {
+                "type": "boolean"
+              },
+              "params": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "updateDocumentTitle": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbRouterPrompt": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "checks": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            },
+            {
+              "type": "string",
+              "description": "Function signature: () => boolean"
+            }
+          ]
+        }
+      }
+    },
+    "ebChildrenPropsEbIf": {
+      "type": "object",
+      "properties": {
+        "checks": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            },
+            {
+              "type": "string",
+              "description": "Function signature: () => boolean"
+            }
+          ]
+        },
+        "authorize": {
+          "$ref": "#/definitions/authorize"
+        }
+      }
+    },
+    "ebChildrenPropsEbHoverOverlay": {
+      "type": "object",
+      "properties": {
+        "placement": {
+          "enum": [
+            "top",
+            "left",
+            "right",
+            "bottom",
+            "topLeft",
+            "topRight",
+            "bottomLeft",
+            "bottomRight",
+            "leftTop",
+            "leftBottom",
+            "rightTop",
+            "rightBottom"
+          ]
+        },
+        "trigger": {
+          "enum": ["hover", "click"]
+        },
+        "arrow": {
+          "type": "boolean"
+        },
+        "eventToToggle": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbCard": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "hoverable": {
+          "type": "boolean"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "click": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event?: unknown) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbCol": {
+      "type": "object",
+      "properties": {
+        "span": {
+          "type": "number"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "push": {
+          "type": "number"
+        },
+        "pull": {
+          "type": "number"
+        },
+        "order": {
+          "type": "number"
+        },
+        "flex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "xs": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "span": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                },
+                "order": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "sm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "span": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                },
+                "order": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "md": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "span": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                },
+                "order": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "lg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "span": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                },
+                "order": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "xl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "span": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                },
+                "order": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "xxl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "span": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                },
+                "order": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "xxxl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "span": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                },
+                "order": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ebChildrenPropsEbCollapse": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "forceRender": {
+          "type": "boolean"
+        },
+        "expandByDefault": {
+          "type": "boolean"
+        },
+        "eventToToggle": {
+          "type": "string"
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbDescriptions": {
+      "type": "object",
+      "properties": {
+        "layout": {
+          "enum": ["horizontal", "vertical"]
+        },
+        "colon": {
+          "type": "boolean"
+        },
+        "column": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "xs": {
+                  "type": "number"
+                },
+                "sm": {
+                  "type": "number"
+                },
+                "md": {
+                  "type": "number"
+                },
+                "lg": {
+                  "type": "number"
+                },
+                "xl": {
+                  "type": "number"
+                },
+                "xxl": {
+                  "type": "number"
+                },
+                "xxxl": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "size": {
+          "enum": ["default", "middle", "small"]
+        },
+        "bordered": {
+          "type": "boolean"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "span": {
+                    "type": "number"
+                  },
+                  "hide": {
+                    "type": "boolean"
+                  },
+                  "children": {
+                    "$ref": "#/definitions/children"
+                  }
+                }
+              }
+            },
+            {
+              "type": "string",
+              "description": "Function signature: () => EBDescriptionItem[]"
+            }
+          ]
+        },
+        "mobileSafe": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbForIn": {
+      "type": "object",
+      "properties": {
+        "array": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/any"
+          }
+        },
+        "filter": {
+          "type": "string",
+          "description": "Function signature: (entry: any) => boolean"
+        },
+        "entryKey": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbForm": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "object",
+          "properties": {
+            "custom": {
+              "type": "object"
+            }
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/formField"
+          }
+        },
+        "cols": {
+          "type": "object"
+        },
+        "layout": {
+          "enum": ["horizontal", "vertical", "inline"]
+        },
+        "labelCol": {
+          "type": "object"
+        },
+        "wrapperCol": {
+          "type": "object"
+        },
+        "showRequiredMark": {
+          "type": "boolean"
+        },
+        "colon": {
+          "type": "boolean"
+        },
+        "eventToSubmit": {
+          "type": "string"
+        },
+        "eventToReset": {
+          "type": "string"
+        },
+        "eventToSetValue": {
+          "type": "string"
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "submit": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: (event: unknown) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbInlineEdit": {
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string"
+        },
+        "style": {
+          "type": "object"
+        },
+        "model": {
+          "type": "object"
+        },
+        "edit": {
+          "anyOf": [
+            {
+              "enum": [false]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "defaultValue": {
+                  "$ref": "#/definitions/any"
+                },
+                "depends": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "ebFormControl": {
+                  "$ref": "#/definitions/ebFormControl"
+                },
+                "on": {
+                  "type": "object",
+                  "properties": {
+                    "change": {
+                      "$ref": "#/definitions/emit",
+                      "description": "Callback signature: OnCellChangeEvent"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "string",
+              "description": "Function signature: () => Promise<EBInlineEditFormConfig>"
+            }
+          ]
+        },
+        "iconOffset": {
+          "type": "object",
+          "properties": {
+            "top": {
+              "type": "string"
+            },
+            "right": {
+              "type": "string"
+            }
+          }
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "submit": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { model: Record<string, unknown> }) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbIcon": {
+      "type": "object",
+      "properties": {
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "asset": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["primary", "secondary", "success", "warning", "danger"]
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbList": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/any"
+              }
+            },
+            "query": {
+              "$ref": "#/definitions/queryConfig"
+            }
+          }
+        },
+        "rowKey": {
+          "type": "string"
+        },
+        "headerText": {
+          "type": "string"
+        },
+        "footerText": {
+          "type": "string"
+        },
+        "border": {
+          "type": "boolean"
+        },
+        "children": {
+          "$ref": "#/definitions/children"
+        }
+      }
+    },
+    "ebChildrenPropsEbMenu": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": ["tab", "horizontal", "vertical"]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "router-link": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbContextMenu": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/any"
+              }
+            },
+            {
+              "type": "string",
+              "description": "Function signature: () => EBContextMenuItem[]"
+            }
+          ]
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "click": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event?: unknown) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbModal": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "eventToOpen": {
+          "type": "string"
+        },
+        "eventToClose": {
+          "type": "string"
+        },
+        "okButton": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "type": {
+              "enum": ["link", "default", "primary", "ghost", "dashed", "text"]
+            },
+            "shape": {
+              "enum": ["default", "circle", "round"]
+            },
+            "hide": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string",
+                  "description": "Function signature: (openParams: unknown) => boolean"
+                }
+              ]
+            },
+            "disabled": {
+              "type": "boolean"
+            },
+            "on": {
+              "type": "object",
+              "properties": {
+                "click": {
+                  "$ref": "#/definitions/emit",
+                  "description": "Callback signature: ($event: { openParams: unknown; orgEvent: MouseEvent }) => void"
+                }
+              }
+            }
+          }
+        },
+        "cancelButton": {
+          "type": "object"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "fullscreen": {
+          "type": "boolean"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "open": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { openParams: unknown }) => void"
+            },
+            "close": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: () => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbRouterView": {
+      "type": "object"
+    },
+    "ebChildrenPropsEbRow": {
+      "type": "object",
+      "properties": {
+        "align": {
+          "enum": ["top", "middle", "bottom"]
+        },
+        "gutter": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "object",
+              "properties": {
+                "xs": {
+                  "type": "number"
+                },
+                "sm": {
+                  "type": "number"
+                },
+                "md": {
+                  "type": "number"
+                },
+                "lg": {
+                  "type": "number"
+                },
+                "xl": {
+                  "type": "number"
+                },
+                "xxl": {
+                  "type": "number"
+                },
+                "xxxl": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "justify": {
+          "enum": ["start", "end", "center", "space-around", "space-between"]
+        },
+        "wrap": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbTabContent": {
+      "type": "object"
+    },
+    "ebChildrenPropsEbTable": {
+      "type": "object",
+      "properties": {
+        "rowKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "description": "Function signature: (record: EBTableRecord) => EBRowKeyType"
+            }
+          ]
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "cols": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ebTableColProps"
+          }
+        },
+        "pagination": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "type": "number"
+            },
+            "current": {
+              "type": "number"
+            },
+            "pageSize": {
+              "type": "number"
+            },
+            "hide": {
+              "type": "boolean"
+            },
+            "totalPages": {
+              "type": "number"
+            },
+            "noLabel": {
+              "type": "boolean"
+            }
+          }
+        },
+        "query": {
+          "$ref": "#/definitions/queryConfig"
+        },
+        "dataSource": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "task"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "params": {
+                  "type": "object"
+                },
+                "cache": {
+                  "type": "object",
+                  "properties": {
+                    "save": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "query"
+                }
+              }
+            }
+          ]
+        },
+        "dataTransform": {
+          "type": "string",
+          "description": "Function signature: (data: unknown) => unknown"
+        },
+        "queryConfigTransform": {
+          "type": "string",
+          "description": "Function signature: (queryConfig: QueryConfig) => QueryConfig"
+        },
+        "excelQueryConfigTransform": {
+          "type": "string",
+          "description": "Function signature: (excelQueryConfig: ExcelQueryConfig) => ExcelQueryConfig"
+        },
+        "sort": {
+          "type": "object",
+          "properties": {
+            "by": {
+              "type": "string"
+            },
+            "direction": {
+              "enum": ["ASC", "DESC"]
+            },
+            "local": {
+              "type": "boolean"
+            }
+          }
+        },
+        "size": {
+          "enum": ["middle", "small", "large"]
+        },
+        "multipleSelection": {
+          "type": "boolean"
+        },
+        "multipleColsSort": {
+          "type": "boolean"
+        },
+        "enableSummary": {
+          "type": "boolean"
+        },
+        "enableExcelExport": {
+          "type": "boolean"
+        },
+        "enableClearAllFilters": {
+          "type": "boolean"
+        },
+        "hideColumnIcons": {
+          "type": "boolean"
+        },
+        "mobileSafe": {
+          "type": "boolean"
+        },
+        "contextMenuShortcutMode": {
+          "enum": ["default", "dropdown", "none"]
+        },
+        "useMaxContentWidth": {
+          "type": "boolean"
+        },
+        "columnMinWidth": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "columnsResizableByDefault": {
+          "type": "boolean"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "$ref": "#/definitions/children"
+                }
+              }
+            }
+          ]
+        },
+        "preferHeight": {
+          "type": "string"
+        },
+        "autoHeight": {
+          "type": "object",
+          "properties": {
+            "minHeight": {
+              "type": "number"
+            }
+          }
+        },
+        "rowStyle": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "string",
+              "description": "Function signature: (record: Record<string, unknown>, index: number) => Partial<CSSStyleDeclaration>"
+            }
+          ]
+        },
+        "rowClass": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "description": "Function signature: (record: Record<string, unknown>, index: number) => string | null"
+            }
+          ]
+        },
+        "parentChild": {
+          "type": "object",
+          "properties": {
+            "indentSize": {
+              "type": "number"
+            },
+            "parentRefKey": {
+              "type": "string"
+            },
+            "parentValueKey": {
+              "type": "string"
+            },
+            "defaultExpandAll": {
+              "type": "boolean"
+            }
+          }
+        },
+        "reorder": {
+          "type": "object"
+        },
+        "eventToRefresh": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "eventToExpand": {
+          "type": "string"
+        },
+        "eventToSelect": {
+          "type": "string"
+        },
+        "eventToFill": {
+          "type": "string"
+        },
+        "eventToSetColumnsOrder": {
+          "type": "string"
+        },
+        "eventToSetColumnsState": {
+          "type": "string"
+        },
+        "eventToSetFilters": {
+          "type": "string"
+        },
+        "eventToSetOrders": {
+          "type": "string"
+        },
+        "eventToUpdateRow": {
+          "type": "string"
+        },
+        "eventToLoad": {
+          "type": "string"
+        },
+        "cache": {
+          "type": "object"
+        },
+        "edit": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": ["table", "row", "cell", "none"]
+            },
+            "eventToSubmit": {
+              "type": "string"
+            },
+            "on": {
+              "type": "object",
+              "properties": {
+                "submit": {
+                  "$ref": "#/definitions/emit",
+                  "description": "Callback signature: ($event: unknown) => void"
+                }
+              }
+            }
+          }
+        },
+        "menuItems": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "contextMenuItems": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "ebChildrenPropsEbTabs": {
+      "type": "object",
+      "properties": {
+        "tabs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "hide": {
+                "type": "boolean"
+              },
+              "forceRender": {
+                "type": "boolean"
+              },
+              "authorize": {
+                "$ref": "#/definitions/authorize"
+              }
+            }
+          }
+        },
+        "initActiveTab": {
+          "type": "string"
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        },
+        "eventToActiveTab": {
+          "type": "string"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "switch": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { from: string | null; to: string | null }) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbTypography": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "enum": ["title", "text", "paragraph", "order-list"]
+        },
+        "text": {
+          "type": "string"
+        },
+        "noTranslation": {
+          "type": "boolean"
+        },
+        "values": {
+          "type": "object"
+        },
+        "ellipsis": {
+          "type": "boolean"
+        },
+        "keepSpace": {
+          "type": "boolean"
+        },
+        "copyable": {
+          "type": "boolean"
+        },
+        "copyText": {
+          "type": "string"
+        },
+        "copyIconTitle": {
+          "type": "object",
+          "properties": {
+            "hover": {
+              "type": "string"
+            },
+            "copied": {
+              "type": "string"
+            }
+          }
+        },
+        "underline": {
+          "type": "boolean"
+        },
+        "mark": {
+          "type": "boolean"
+        },
+        "strong": {
+          "type": "boolean"
+        },
+        "delete": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "code": {
+          "type": "boolean"
+        },
+        "titleNoBottomMargin": {
+          "type": "boolean"
+        },
+        "keyboard": {
+          "type": "boolean"
+        },
+        "level": {
+          "enum": [1, 2, 3, 4, 5]
+        },
+        "type": {
+          "enum": ["secondary", "success", "warning", "danger", "link"]
+        },
+        "orderList": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "field": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "multiLines": {
+          "type": "boolean"
+        },
+        "maxLines": {
+          "type": "number"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "click": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event?: unknown) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbUserMenu": {
+      "type": "object",
+      "properties": {
+        "userProfileLinks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "policy": {
+                "type": "string"
+              },
+              "link": {
+                "type": "string"
+              },
+              "on": {
+                "type": "object",
+                "properties": {
+                  "click": {
+                    "$ref": "#/definitions/emit",
+                    "description": "Callback signature: ($event: { user: UserContext }) => void"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "extraUserMenuItems": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/any"
+          }
+        },
+        "showSecurityPolicies": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "ebChildrenPropsEbUserUnauthorized": {
+      "type": "object",
+      "properties": {
+        "authorize": {
+          "$ref": "#/definitions/authorize"
+        },
+        "renderPlaceHolder": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbImage": {
+      "type": "object",
+      "properties": {
+        "asset": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "height": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "preview": {
+          "type": "boolean"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "click": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event?: unknown) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbTree": {
+      "type": "object",
+      "properties": {
+        "nodeKey": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/any"
+          }
+        },
+        "ebTreeDataSource": {
+          "type": "string",
+          "description": "Function signature: (treeNode: EventDataNode | null, searchTerm: string | null) => ({ type: 'query' } & QueryConfig) | { type: 'task'; name: string; params?: Record<string, unknown> }"
+        },
+        "height": {
+          "type": "number"
+        },
+        "autoHeight": {
+          "type": "object",
+          "properties": {
+            "minHeight": {
+              "type": "number"
+            },
+            "offset": {
+              "type": "number"
+            }
+          }
+        },
+        "showLine": {
+          "type": "boolean"
+        },
+        "treeType": {
+          "type": "string"
+        },
+        "expandOnSelect": {
+          "type": "boolean"
+        },
+        "noDeselect": {
+          "type": "boolean"
+        },
+        "search": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "const": true
+                },
+                "propToSearch": {
+                  "type": "string"
+                },
+                "isDoneOnLoad": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "const": false
+                }
+              }
+            }
+          ]
+        },
+        "loadData": {
+          "type": "string",
+          "description": "Function signature: ($treeNode: EventDataNode | null) => Promise<EBTreeItem[]>"
+        },
+        "eventToSelect": {
+          "type": "string"
+        },
+        "eventToExpand": {
+          "type": "string"
+        },
+        "isLeaf": {
+          "type": "string",
+          "description": "Function signature: (item: EBTreeItem) => boolean"
+        },
+        "isSelectable": {
+          "type": "string",
+          "description": "Function signature: (item: EBTreeItem) => boolean"
+        },
+        "contextMenuItems": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "select": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { item: EBTreeItem }) => unknown"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbLoading": {
+      "type": "object",
+      "properties": {
+        "visible": {
+          "type": "boolean"
+        },
+        "label": {
+          "type": "string"
+        },
+        "spinning": {
+          "type": "boolean"
+        },
+        "inline": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbMarkdown": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "showingRaw": {
+          "type": "boolean"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "linkClick": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: Event) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbMonacoViewer": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string"
+        },
+        "diffMode": {
+          "type": "boolean"
+        },
+        "content": {
+          "type": "string"
+        },
+        "diffContent": {
+          "type": "string"
+        },
+        "contentTitle": {
+          "type": "string"
+        },
+        "diffContentTitle": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbImageViewer": {
+      "type": "object",
+      "properties": {
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbPdfViewer": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "file": {
+          "type": "object"
+        },
+        "data": {
+          "type": "object"
+        },
+        "task": {
+          "$ref": "#/definitions/taskConfig"
+        },
+        "thumbnailWidth": {
+          "type": "number"
+        },
+        "metadataWidth": {
+          "type": "number"
+        },
+        "sidebarInitialView": {
+          "enum": ["none", "thumbs"]
+        },
+        "mode": {
+          "enum": ["legacy", "modern"]
+        },
+        "disableKeyboard": {
+          "type": "boolean"
+        },
+        "eventToFocus": {
+          "type": "string"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "load": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: unknown) => void"
+            },
+            "download": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { data: Uint8Array; fileName: string }) => void"
+            },
+            "attachmentSelected": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { filename: string; content: unknown }) => void"
+            },
+            "thumbnailRendered": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { pageNumber: number; imageUrl: string }) => void"
+            },
+            "pageChanged": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { pageNumber: number }) => void"
+            }
+          }
+        },
+        "extraMenuItems": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            {
+              "type": "string",
+              "description": "Function signature: () => EBPdfViewerMenuItem[]"
+            }
+          ]
+        }
+      }
+    },
+    "ebChildrenPropsEbPdf": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "file": {
+          "type": "object"
+        },
+        "data": {
+          "type": "object"
+        },
+        "task": {
+          "$ref": "#/definitions/taskConfig"
+        },
+        "thumbnailWidth": {
+          "type": "number"
+        },
+        "metadataWidth": {
+          "type": "number"
+        },
+        "sidebarInitialView": {
+          "enum": ["none", "thumbs"]
+        },
+        "mode": {
+          "enum": ["legacy", "modern"]
+        },
+        "disableKeyboard": {
+          "type": "boolean"
+        },
+        "eventToFocus": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbFilesDrop": {
+      "type": "object",
+      "properties": {
+        "targetSelector": {
+          "type": "string"
+        },
+        "dragOverDesc": {
+          "type": "string"
+        },
+        "eventToDisable": {
+          "type": "string"
+        },
+        "eventToEnable": {
+          "type": "string"
+        },
+        "maxFiles": {
+          "type": "number"
+        },
+        "fileTypes": {
+          "type": "string"
+        },
+        "acceptFile": {
+          "type": "boolean"
+        },
+        "acceptUrl": {
+          "type": "boolean"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "dropFiles": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event?: { files: File[] }) => void"
+            },
+            "dropUrl": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event?: { url: string }) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbSingletonComponent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbHtmlViewer": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "height": {
+          "type": "number"
+        }
+      }
+    },
+    "ebChildrenPropsEbGridItems": {
+      "type": "object",
+      "properties": {
+        "itemKey": {
+          "type": "string"
+        },
+        "dataSource": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "task"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "params": {
+                  "type": "object"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "query"
+                }
+              }
+            }
+          ]
+        },
+        "loadMore": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "direction": {
+              "enum": ["ASC", "DESC"]
+            }
+          }
+        },
+        "numOfItemsPerLoad": {
+          "type": "number"
+        },
+        "itemSpan": {
+          "type": "object",
+          "properties": {
+            "xs": {
+              "type": "number"
+            },
+            "sm": {
+              "type": "number"
+            },
+            "md": {
+              "type": "number"
+            },
+            "lg": {
+              "type": "number"
+            },
+            "xl": {
+              "type": "number"
+            },
+            "xxl": {
+              "type": "number"
+            }
+          }
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        },
+        "eventToUpdateItem": {
+          "type": "string"
+        },
+        "eventToDeleteItem": {
+          "type": "string"
+        },
+        "eventToAddItem": {
+          "type": "string"
+        },
+        "eventToRefresh": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbKanbanBoard": {
+      "type": "object",
+      "properties": {
+        "cols": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "filters": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "swimlanes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "swimlaneKey": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "itemKey": {
+                "type": "string"
+              },
+              "colorKey": {
+                "type": "string"
+              },
+              "dataSource": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "const": "task"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "params": {
+                        "type": "object"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "const": "query"
+                      }
+                    }
+                  }
+                ]
+              },
+              "loadMore": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "direction": {
+                    "enum": ["ASC", "DESC"]
+                  }
+                }
+              },
+              "numOfItemsPerLoad": {
+                "type": "number"
+              },
+              "data": {
+                "type": "object"
+              },
+              "eventToUpdateItem": {
+                "type": "string"
+              },
+              "eventToDeleteItem": {
+                "type": "string"
+              },
+              "eventToAddItem": {
+                "type": "string"
+              },
+              "on": {
+                "type": "object",
+                "properties": {
+                  "move": {
+                    "$ref": "#/definitions/emit",
+                    "description": "Callback signature: ($event: { item: Record<string, unknown>; from?: string; to?: string }) => void"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "swimlaneBase": {
+          "type": "object"
+        },
+        "numOfItemsPerLoad": {
+          "type": "number"
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        },
+        "eventToUpdateHeaderPos": {
+          "type": "string"
+        }
+      }
+    },
+    "ebChildrenPropsEbLayoutMaster": {
+      "type": "object",
+      "properties": {
+        "noHeader": {
+          "type": "boolean"
+        },
+        "menuItems": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "menuTitle": {
+          "type": "string"
+        },
+        "showSearch": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbLayoutMasterTabs": {
+      "type": "object",
+      "properties": {
+        "noHeader": {
+          "type": "boolean"
+        },
+        "menuItems": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "menuTitle": {
+          "type": "string"
+        },
+        "showSearch": {
+          "type": "boolean"
+        },
+        "hideMainHeaderInsideIframe": {
+          "type": "boolean"
+        },
+        "forceNoCacheInsideIframe": {
+          "type": "boolean"
+        },
+        "cache": {
+          "type": "boolean"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "router-link": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "closable": {
+                "type": "boolean"
+              },
+              "policy": {
+                "type": "string"
+              },
+              "authorize": {
+                "$ref": "#/definitions/authorize"
+              }
+            }
+          }
+        },
+        "dynamicItemsRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "policy": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "new": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { key: string; path: string }) => void"
+            },
+            "close": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { key: string; path: string }) => void"
+            },
+            "switch": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: ($event: { from: { key: string; path: string }; to: { key: string; path: string } }) => void"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbLayoutSidebar": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "collapsedCacheKey": {
+          "type": "string"
+        },
+        "contentPadding": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "sidebarCollapsible": {
+          "type": "boolean"
+        },
+        "header": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "hideDefaultTrigger": {
+          "type": "boolean"
+        },
+        "eventToToggle": {
+          "type": "string"
+        },
+        "collapsedByDefault": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebChildrenPropsEbLayoutSidebarMenu": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "collapsedCacheKey": {
+          "type": "string"
+        },
+        "contentPadding": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "sidebarCollapsible": {
+          "type": "boolean"
+        },
+        "header": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "hideDefaultTrigger": {
+          "type": "boolean"
+        },
+        "eventToToggle": {
+          "type": "string"
+        },
+        "collapsedByDefault": {
+          "type": "boolean"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "router-link": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "authorize": {
+                "$ref": "#/definitions/authorize"
+              },
+              "hide": {
+                "type": "boolean"
+              },
+              "subItems": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/any"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenPropsEbLayoutMain": {
+      "type": "object",
+      "properties": {
+        "contentPadding": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "ebChildrenPropsEbLayoutSplitCols": {
+      "type": "object",
+      "properties": {
+        "cols": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "size": {
+                "type": "number"
+              },
+              "minSize": {
+                "type": "number"
+              },
+              "maxSize": {
+                "type": "number"
+              },
+              "hide": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "ebChildrenName": {
+      "type": "string",
+      "enum": [
+        "eb-config-provider",
+        "eb-vnode",
+        "eb-button",
+        "eb-alert",
+        "eb-router-link",
+        "eb-brand-logo",
+        "eb-breadcrumb",
+        "eb-router-prompt",
+        "eb-if",
+        "eb-hover-overlay",
+        "eb-card",
+        "eb-col",
+        "eb-collapse",
+        "eb-descriptions",
+        "eb-for-in",
+        "eb-form",
+        "eb-inline-edit",
+        "eb-icon",
+        "eb-list",
+        "eb-menu",
+        "eb-context-menu",
+        "eb-modal",
+        "eb-router-view",
+        "eb-row",
+        "eb-tab-content",
+        "eb-table",
+        "eb-tabs",
+        "eb-typography",
+        "eb-user-menu",
+        "eb-user-unauthorized",
+        "eb-image",
+        "eb-tree",
+        "eb-loading",
+        "eb-markdown",
+        "eb-monaco-viewer",
+        "eb-image-viewer",
+        "eb-pdf-viewer",
+        "eb-pdf",
+        "eb-files-drop",
+        "eb-singleton-component",
+        "eb-html-viewer",
+        "eb-grid-items",
+        "eb-kanban-board",
+        "eb-layout-master",
+        "eb-layout-master-tabs",
+        "eb-layout-sidebar",
+        "eb-layout-sidebar-menu",
+        "eb-layout-main",
+        "eb-layout-split-cols"
+      ]
+    },
+    "ebChildren": {
+      "description": "eBuilder builtin component",
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/ebChildrenName"
+        },
+        "slot": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "description": "Component-specific properties"
+        },
+        "children": {
+          "$ref": "#/definitions/children"
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "name": {
+              "const": "eb-config-provider"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbConfigProvider"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-vnode"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbVnode"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-button"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbButton"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-alert"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbAlert"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-router-link"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbRouterLink"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-brand-logo"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbBrandLogo"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-breadcrumb"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbBreadcrumb"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-router-prompt"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbRouterPrompt"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-if"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbIf"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-hover-overlay"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbHoverOverlay"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-card"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbCard"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-col"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbCol"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-collapse"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbCollapse"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-descriptions"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbDescriptions"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-for-in"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbForIn"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-form"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbForm"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-inline-edit"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbInlineEdit"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-icon"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbIcon"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-list"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbList"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-menu"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbMenu"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-context-menu"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbContextMenu"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-modal"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbModal"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-router-view"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbRouterView"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-row"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbRow"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-tab-content"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbTabContent"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-table"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbTable"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-tabs"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbTabs"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-typography"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbTypography"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-user-menu"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbUserMenu"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-user-unauthorized"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbUserUnauthorized"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-image"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbImage"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-tree"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbTree"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-loading"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbLoading"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-markdown"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbMarkdown"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-monaco-viewer"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbMonacoViewer"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-image-viewer"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbImageViewer"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-pdf-viewer"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbPdfViewer"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-pdf"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbPdf"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-files-drop"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbFilesDrop"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-singleton-component"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbSingletonComponent"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-html-viewer"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbHtmlViewer"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-grid-items"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbGridItems"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-kanban-board"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbKanbanBoard"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-layout-master"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbLayoutMaster"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-layout-master-tabs"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbLayoutMasterTabs"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-layout-sidebar"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbLayoutSidebar"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-layout-sidebar-menu"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbLayoutSidebarMenu"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-layout-main"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbLayoutMain"
+            }
+          }
+        },
+        {
+          "properties": {
+            "name": {
+              "const": "eb-layout-split-cols"
+            },
+            "props": {
+              "$ref": "#/definitions/ebChildrenPropsEbLayoutSplitCols"
+            }
+          }
+        }
+      ],
+      "required": ["name"]
+    },
     "child": {
       "anyOf": [
-        { "$ref": "#/definitions/htmlChildren" },
-        { "$ref": "#/definitions/ebChildren" },
-        { "$ref": "#/definitions/includedChildren" }
+        {
+          "$ref": "#/definitions/htmlChildren"
+        },
+        {
+          "$ref": "#/definitions/includedChildren"
+        },
+        {
+          "$ref": "#/definitions/ebChildren"
+        }
       ]
     },
     "children": {
-      "description": "Component children",
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/child"
-      }
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/child"
+          }
+        }
+      ]
     },
     "rootVars": {
       "description": "Component root variables",
@@ -432,55 +3327,26 @@
       ]
     },
     "rootMemo": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/any"
-      }
+      "type": "object"
     },
     "rootStore": {
       "description": "Component root store",
-      "type": "object",
-      "additionalProperties": {
-        "type": "object",
-        "properties": {
-          "storeKey": {
-            "type": "string"
-          },
-          "initialState": {
-            "type": "object"
-          }
-        }
-      }
+      "type": "object"
     },
     "on": {
       "description": "Component event listeners",
       "type": "object",
       "properties": {
         "load": {
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/definitions/emit"
-            }
-          ]
+          "$ref": "#/definitions/emit"
         },
         "unload": {
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/definitions/emit"
-            }
-          ]
+          "$ref": "#/definitions/emit"
         },
         "emit": {
           "type": "array",
           "items": {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
               "name": {
                 "type": "string"
@@ -489,14 +3355,7 @@
                 "type": "number"
               },
               "handler": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "$ref": "#/definitions/emit"
-                  }
-                ]
+                "$ref": "#/definitions/emit"
               }
             }
           }
@@ -510,14 +3369,7 @@
                 "$ref": "#/definitions/any"
               },
               "handler": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "$ref": "#/definitions/emit"
-                  }
-                ]
+                "$ref": "#/definitions/emit"
               }
             }
           }
@@ -530,14 +3382,27 @@
       "properties": {
         "emit": {
           "anyOf": [
-            { "type": "string" },
+            {
+              "type": "string"
+            },
             {
               "type": "object",
               "properties": {
-                "name": { "type": "string" },
-                "delay": { "type": "number" },
-                "checks": { "type": "array", "items": { "type": "string" } },
-                "params": { "type": "object" }
+                "name": {
+                  "type": "string"
+                },
+                "delay": {
+                  "type": "number"
+                },
+                "checks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "params": {
+                  "type": "object"
+                }
               }
             },
             {
@@ -545,13 +3410,505 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string" },
-                  "delay": { "type": "number" },
-                  "depends": { "type": "array", "items": { "type": "string" } },
-                  "checks": { "type": "array", "items": { "type": "string" } },
-                  "params": { "type": "object" }
+                  "name": {
+                    "type": "string"
+                  },
+                  "delay": {
+                    "type": "number"
+                  },
+                  "depends": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "checks": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "params": {
+                    "type": "object"
+                  }
                 }
               }
+            }
+          ]
+        }
+      }
+    },
+    "queryMutationId": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "datasource": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "queryPagination": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "number"
+        },
+        "size": {
+          "type": "number"
+        },
+        "total": {
+          "type": "number"
+        }
+      }
+    },
+    "queryOrder": {
+      "type": "object",
+      "properties": {
+        "by": {
+          "type": "string"
+        },
+        "direction": {
+          "enum": ["ASC", "DESC"]
+        }
+      }
+    },
+    "queryFilter": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "op": {
+          "enum": [
+            "in",
+            "nin",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "e",
+            "ne",
+            "c",
+            "sw",
+            "nc",
+            "null",
+            "notNull",
+            "nullOrEmpty",
+            "notNullOrEmpty",
+            "date_gt",
+            "date_gte",
+            "date_lt",
+            "date_lte",
+            "date_gte_lte",
+            "date_e",
+            "date_ne"
+          ]
+        },
+        "value": {
+          "$ref": "#/definitions/any"
+        }
+      }
+    },
+    "queryConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/queryMutationId"
+        },
+        "params": {
+          "type": "object"
+        },
+        "pagination": {
+          "$ref": "#/definitions/queryPagination"
+        },
+        "skip": {
+          "type": "number"
+        },
+        "take": {
+          "type": "number"
+        },
+        "orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/queryOrder"
+          }
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/queryFilter"
+          }
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "distinct": {
+          "type": "boolean"
+        },
+        "cache": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "taskConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "cache": {
+          "type": "object",
+          "properties": {
+            "invalid": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "save": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "headers": {
+          "type": "object"
+        },
+        "noCancel": {
+          "type": "boolean"
+        },
+        "keepAlive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ebColumnType": {
+      "enum": ["string", "number", "datetime", "date", "time", "boolean"]
+    },
+    "ebTableFilterConfig": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": "object",
+          "description": "Config for filter type 'options' - maps filter value to display label"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of filter for 'options' type filters"
+        },
+        "selectSearch": {
+          "type": "object",
+          "description": "Config for filter type 'select-search'"
+        },
+        "dataIndex": {
+          "type": "string",
+          "description": "Forward filter values to other field in query"
+        },
+        "distinct": {
+          "type": "boolean"
+        },
+        "distinctAdditionalFilters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/queryFilter"
+          }
+        },
+        "dataIndexType": {
+          "$ref": "#/definitions/ebColumnType"
+        },
+        "supportOps": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "in",
+              "nin",
+              "gt",
+              "gte",
+              "lt",
+              "lte",
+              "e",
+              "ne",
+              "c",
+              "sw",
+              "nc",
+              "null",
+              "notNull",
+              "nullOrEmpty",
+              "notNullOrEmpty",
+              "date_gt",
+              "date_gte",
+              "date_lt",
+              "date_lte",
+              "date_gte_lte",
+              "date_e",
+              "date_ne"
+            ]
+          }
+        }
+      }
+    },
+    "ebColEdit": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "$ref": "#/definitions/any"
+        },
+        "depends": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "change": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: (event: { recordIndex: number; record: unknown }) => void"
+            }
+          }
+        },
+        "key": {
+          "type": "number"
+        },
+        "ebFormControl": {
+          "$ref": "#/definitions/ebFormControl"
+        }
+      }
+    },
+    "ebTableColProps": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "dataIndex": {
+          "type": "string"
+        },
+        "hide": {
+          "type": "boolean"
+        },
+        "hideToggleable": {
+          "type": "boolean"
+        },
+        "ellipsis": {
+          "type": "boolean"
+        },
+        "multiLines": {
+          "type": "boolean"
+        },
+        "maxLines": {
+          "type": "number"
+        },
+        "edit": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/ebColEdit"
+            }
+          ]
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "default": {
+                  "type": "string"
+                },
+                "hover": {
+                  "type": "string"
+                },
+                "inFiltersAndColumnsPopUp": {
+                  "type": "string"
+                },
+                "children": {
+                  "$ref": "#/definitions/children"
+                }
+              }
+            }
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "sorter": {
+          "anyOf": [
+            {
+              "type": "string",
+              "description": "Function signature: (firstEle: unknown, secondEle: unknown) => number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "compare": {
+                  "type": "string",
+                  "description": "Function signature: (firstEle: unknown, secondEle: unknown) => number"
+                },
+                "multiple": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        },
+        "sortByDefault": {
+          "type": "object",
+          "properties": {
+            "direction": {
+              "enum": ["ASC", "DESC"]
+            },
+            "priority": {
+              "type": "number"
+            }
+          }
+        },
+        "filter": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ebTableFilterConfig"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "filterByDefault": {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "in",
+                "nin",
+                "gt",
+                "gte",
+                "lt",
+                "lte",
+                "e",
+                "ne",
+                "c",
+                "sw",
+                "nc",
+                "null",
+                "notNull",
+                "nullOrEmpty",
+                "notNullOrEmpty",
+                "date_gt",
+                "date_gte",
+                "date_lt",
+                "date_lte",
+                "date_gte_lte",
+                "date_e",
+                "date_ne"
+              ]
+            },
+            "value": {
+              "$ref": "#/definitions/any"
+            }
+          },
+          "description": "Default filter (field is omitted, inferred from column dataIndex)"
+        },
+        "align": {
+          "type": "string"
+        },
+        "children": {
+          "$ref": "#/definitions/children"
+        },
+        "transform": {
+          "type": "string",
+          "description": "Function signature: (event: { record: unknown; index: number }) => Promise<unknown>"
+        },
+        "type": {
+          "$ref": "#/definitions/ebColumnType"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "children": {
+                  "$ref": "#/definitions/children"
+                }
+              }
+            }
+          ]
+        },
+        "minWidth": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "maxWidth": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
             }
           ]
         }
@@ -573,24 +3930,1143 @@
         "permissions": {
           "type": "array",
           "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "formFieldControlPropsEbCellFormItem": {
+      "type": "object",
+      "description": "No specific control props are documented for eb-cell-form-item"
+    },
+    "formFieldControlPropsEbCheckbox": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": "array",
+          "items": {
+            "type": ["boolean", "number", "string", "null"]
+          }
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "title": {
+          "type": "string"
+        },
+        "inlineLabel": {
+          "type": "boolean"
+        }
+      }
+    },
+    "formFieldControlPropsEbDateTime": {
+      "type": "object",
+      "properties": {
+        "autoFocus": {
+          "type": "boolean"
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "showTime": {
+          "type": "boolean"
+        },
+        "showToday": {
+          "type": "boolean"
+        },
+        "disableDates": {
+          "type": "array",
+          "items": {
             "type": "object",
-            "additionalProperties": {
-              "enum": ["Modify", "Show", "Deny"]
+            "properties": {
+              "startDate": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object"
+                  }
+                ]
+              },
+              "endDate": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "customFormat": {
+          "type": "string"
+        }
+      }
+    },
+    "formFieldControlPropsEbFile": {
+      "type": "object",
+      "properties": {
+        "disable": {
+          "type": "boolean"
+        },
+        "maxFiles": {
+          "type": "number"
+        },
+        "maxSize": {
+          "type": "number"
+        },
+        "accept": {
+          "type": "string"
+        }
+      }
+    },
+    "formFieldControlPropsEbHidden": {
+      "type": "object",
+      "description": "No specific control props are documented for eb-hidden"
+    },
+    "formFieldControlPropsEbHtmlEditor": {
+      "type": "object",
+      "properties": {
+        "disable": {
+          "type": "boolean"
+        },
+        "maxHeight": {
+          "type": "number"
+        },
+        "minHeight": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "autoResize": {
+          "type": "boolean"
+        },
+        "eventToInsertContent": {
+          "type": "string"
+        }
+      }
+    },
+    "formFieldControlPropsEbNumber": {
+      "type": "object",
+      "properties": {
+        "hideControls": {
+          "type": "boolean"
+        },
+        "autoFocus": {
+          "type": "boolean"
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "formatter": {
+          "type": "string",
+          "description": "Function signature: (value: unknown) => unknown"
+        },
+        "parser": {
+          "type": "string",
+          "description": "Function signature: (value: unknown) => unknown"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "blur": {
+              "type": "string",
+              "description": "Function signature: ($event: unknown) => void"
+            },
+            "enter": {
+              "type": "string",
+              "description": "Function signature: ($event: unknown) => void"
+            },
+            "keyUp": {
+              "type": "string",
+              "description": "Function signature: ($event: unknown) => void"
+            },
+            "keyDown": {
+              "type": "string",
+              "description": "Function signature: ($event: unknown) => void"
             }
           }
         }
       }
     },
-    "componentProps": {
-      "description": "Component properties",
+    "formFieldControlPropsEbPassword": {
       "type": "object",
       "properties": {
+        "autoFocus": {
+          "type": "boolean"
+        },
+        "disable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "formFieldControlPropsEbSelect": {
+      "type": "object",
+      "properties": {
+        "autoFocus": {
+          "type": "boolean"
+        },
+        "mode": {
+          "enum": ["multiple", "tags"]
+        },
+        "valueSeparator": {
+          "type": "string"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "style": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "popupClassName": {
+          "type": "string"
+        },
+        "showClear": {
+          "type": "boolean"
+        },
+        "showSearch": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "query": {
+              "$ref": "#/definitions/queryConfig"
+            },
+            "task": {
+              "$ref": "#/definitions/taskConfig"
+            },
+            "label": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string",
+                  "description": "Function signature: ($entry: unknown) => string"
+                }
+              ]
+            },
+            "value": {
+              "type": "string"
+            },
+            "autoSelectOnFirstLoad": {
+              "type": "boolean"
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        },
+        "fixedTopOptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "showRefresh": {
+          "type": "boolean"
+        },
+        "eventToRefresh": {
+          "type": "string"
+        },
+        "rawObject": {
+          "type": "boolean"
+        }
+      }
+    },
+    "formFieldControlPropsEbSelectSearch": {
+      "type": "object",
+      "properties": {
+        "autoFocus": {
+          "type": "boolean"
+        },
+        "mode": {
+          "const": "multiple"
+        },
+        "valueSeparator": {
+          "type": "string"
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "style": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "filterOperator": {
+          "$ref": "#/definitions/any"
+        },
+        "searchMode": {
+          "enum": ["filter", "param"]
+        },
+        "numberOfSearchResults": {
+          "type": "number"
+        },
+        "minSearchTermLength": {
+          "type": "number"
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "$ref": "#/definitions/queryConfig"
+            },
+            "label": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string",
+                  "description": "Function signature: ($entry: unknown) => string"
+                }
+              ]
+            },
+            "value": {
+              "type": "string"
+            },
+            "searchOnField": {
+              "type": "string"
+            }
+          }
+        },
+        "showRefresh": {
+          "type": "boolean"
+        },
+        "eventToRefresh": {
+          "type": "string"
+        }
+      }
+    },
+    "formFieldControlPropsEbText": {
+      "type": "object",
+      "properties": {
+        "autoFocus": {
+          "type": "boolean"
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "trigger": {
+          "enum": ["blur", "change"]
+        },
         "on": {
           "type": "object",
-          "$ref": "#/definitions/emit"
+          "properties": {
+            "blur": {
+              "type": "string",
+              "description": "Function signature: ($event: unknown) => void"
+            },
+            "keyUp": {
+              "type": "string",
+              "description": "Function signature: ($event: unknown) => void"
+            },
+            "keyDown": {
+              "type": "string",
+              "description": "Function signature: ($event: unknown) => void"
+            }
+          }
+        },
+        "mask": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string"
+            }
+          }
         }
-      },
-      "additionalProperties": true
+      }
+    },
+    "formFieldControlPropsEbTextArea": {
+      "type": "object",
+      "properties": {
+        "disable": {
+          "type": "boolean"
+        },
+        "minRows": {
+          "type": "number"
+        },
+        "maxRows": {
+          "type": "number"
+        },
+        "autoFocus": {
+          "type": "boolean"
+        }
+      }
+    },
+    "formFieldControlPropsEbTransfer": {
+      "type": "object",
+      "properties": {
+        "disable": {
+          "type": "boolean"
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "showSearch": {
+          "type": "boolean"
+        },
+        "customSearch": {
+          "type": "string",
+          "description": "Function signature: (item: unknown, searchTerm: string) => boolean"
+        },
+        "draggable": {
+          "type": "boolean"
+        },
+        "eventToSelect": {
+          "type": "string"
+        },
+        "eventToMoveItem": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "query": {
+              "$ref": "#/definitions/queryConfig"
+            },
+            "options": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "valueKey": {
+              "type": "string"
+            },
+            "labelKey": {
+              "type": "string"
+            },
+            "children": {
+              "$ref": "#/definitions/children"
+            },
+            "enableReorder": {
+              "type": "boolean"
+            },
+            "on": {
+              "type": "object",
+              "properties": {
+                "change": {
+                  "type": "string",
+                  "description": "Function signature: ($event: { value: unknown[] }) => void"
+                }
+              }
+            }
+          }
+        },
+        "target": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "query": {
+              "$ref": "#/definitions/queryConfig"
+            },
+            "valueKey": {
+              "type": "string"
+            },
+            "enableReorder": {
+              "type": "boolean"
+            },
+            "syncSourceOrder": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "formFieldControlPropsEbRadio": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": ["button", "radio"]
+        },
+        "options": {
+          "type": "object"
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "query": {
+              "$ref": "#/definitions/queryConfig"
+            },
+            "label": {
+              "type": "string"
+            },
+            "icon": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "formFieldControlPropsEbMonacoEditor": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string"
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "wordWrap": {
+          "type": "boolean"
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "eventToAppendText": {
+          "type": "string"
+        },
+        "provideCompletionItems": {
+          "type": "string",
+          "description": "Function signature: (monaco, model, position, context, token) => Promise<unknown>"
+        },
+        "editorOptions": {
+          "type": "object"
+        }
+      }
+    },
+    "formFieldControlPropsEbCustomField": {
+      "type": "object",
+      "description": "No specific control props are documented for eb-custom-field"
+    },
+    "formFieldControlPropsEbColor": {
+      "type": "object",
+      "properties": {
+        "autoFocus": {
+          "type": "boolean"
+        },
+        "disable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "formFieldControlPropsEbCheckboxGroup": {
+      "type": "object",
+      "properties": {
+        "spans": {
+          "type": "object",
+          "properties": {
+            "xs": {
+              "type": "number"
+            },
+            "sm": {
+              "type": "number"
+            },
+            "md": {
+              "type": "number"
+            },
+            "lg": {
+              "type": "number"
+            },
+            "xl": {
+              "type": "number"
+            },
+            "xxl": {
+              "type": "number"
+            }
+          }
+        },
+        "valueSeparator": {
+          "type": "string"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "query": {
+              "$ref": "#/definitions/queryConfig"
+            },
+            "task": {
+              "$ref": "#/definitions/taskConfig"
+            },
+            "label": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string",
+                  "description": "Function signature: ($entry: unknown) => string"
+                }
+              ]
+            },
+            "value": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        },
+        "eventToRefresh": {
+          "type": "string"
+        }
+      }
+    },
+    "formFieldControlPropsEbSearch": {
+      "type": "object",
+      "properties": {
+        "autoFocus": {
+          "type": "boolean"
+        },
+        "disable": {
+          "type": "boolean"
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "size": {
+          "enum": ["small", "middle", "large"]
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "suggest": {
+              "type": "string",
+              "description": "Function signature: ($event: { value: string | null | undefined }) => void"
+            },
+            "select": {
+              "type": "string",
+              "description": "Function signature: ($event: { value: string | null | undefined }) => void"
+            },
+            "search": {
+              "type": "string",
+              "description": "Function signature: ($event: { value: string | null | undefined }) => void"
+            }
+          }
+        }
+      }
+    },
+    "formFieldControlName": {
+      "type": "string",
+      "enum": [
+        "eb-cell-form-item",
+        "eb-checkbox",
+        "eb-datetime",
+        "eb-file",
+        "eb-hidden",
+        "eb-html-editor",
+        "eb-number",
+        "eb-password",
+        "eb-select",
+        "eb-select-search",
+        "eb-text",
+        "eb-textarea",
+        "eb-transfer",
+        "eb-radio",
+        "eb-monaco-editor",
+        "eb-custom-field",
+        "eb-color",
+        "eb-checkbox-group",
+        "eb-search"
+      ]
+    },
+    "formField": {
+      "type": "object",
+      "description": "Form field definition with validation rules, control configuration, and event handling",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "style": {
+          "type": ["string", "object"],
+          "description": "CSS properties (CSSProperties)"
+        },
+        "defaultValue": {
+          "$ref": "#/definitions/any"
+        },
+        "depends": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Form fields that this field depends on"
+        },
+        "on": {
+          "type": "object",
+          "properties": {
+            "change": {
+              "$ref": "#/definitions/emit",
+              "description": "Callback signature: OnChangeEvent"
+            }
+          }
+        },
+        "ebFormControl": {
+          "$ref": "#/definitions/ebFormControl"
+        }
+      }
+    },
+    "ebFormControl": {
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Function signature: (event: { $dependencies: Record<string, unknown> }) => FieldItemControl"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": ["string", "null"]
+            },
+            "desc": {
+              "type": "string"
+            },
+            "name": {
+              "$ref": "#/definitions/formFieldControlName"
+            },
+            "props": {
+              "type": "object",
+              "description": "Control-specific properties"
+            },
+            "rules": {
+              "type": "array",
+              "description": "Validation rules for the field",
+              "items": {
+                "$ref": "#/definitions/validationRule"
+              }
+            },
+            "spans": {
+              "type": "object",
+              "description": "Responsive column span configuration",
+              "properties": {
+                "xs": {
+                  "type": "number",
+                  "description": "Extra small breakpoint"
+                },
+                "sm": {
+                  "type": "number",
+                  "description": "Small breakpoint"
+                },
+                "md": {
+                  "type": "number",
+                  "description": "Medium breakpoint"
+                },
+                "lg": {
+                  "type": "number",
+                  "description": "Large breakpoint"
+                },
+                "xl": {
+                  "type": "number",
+                  "description": "Extra large breakpoint"
+                },
+                "xxl": {
+                  "type": "number",
+                  "description": "Extra extra large breakpoint"
+                }
+              }
+            },
+            "class": {
+              "type": "string",
+              "description": "CSS class names"
+            },
+            "children": {
+              "$ref": "#/definitions/children"
+            }
+          },
+          "anyOf": [
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-cell-form-item"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbCellFormItem"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-checkbox"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbCheckbox"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-datetime"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbDateTime"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-file"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbFile"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-hidden"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbHidden"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-html-editor"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbHtmlEditor"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-number"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbNumber"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-password"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbPassword"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-select"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbSelect"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-select-search"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbSelectSearch"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-text"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbText"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-textarea"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbTextArea"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-transfer"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbTransfer"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-radio"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbRadio"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-monaco-editor"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbMonacoEditor"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-custom-field"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbCustomField"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-color"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbColor"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-checkbox-group"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbCheckboxGroup"
+                }
+              }
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "eb-search"
+                },
+                "props": {
+                  "$ref": "#/definitions/formFieldControlPropsEbSearch"
+                }
+              }
+            }
+          ],
+          "required": ["name"]
+        }
+      ]
+    },
+    "validationRule": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "len": {
+          "type": "number",
+          "description": "Exact length"
+        },
+        "max": {
+          "type": "number",
+          "description": "Maximum length or value"
+        },
+        "min": {
+          "type": "number",
+          "description": "Minimum length or value"
+        },
+        "pattern": {
+          "type": "object",
+          "description": "RegExp pattern for validation"
+        },
+        "message": {
+          "type": "string",
+          "description": "Custom validation error message"
+        },
+        "enum": {
+          "type": "array",
+          "description": "Allowed values"
+        },
+        "type": {
+          "type": "string",
+          "description": "Field type constraint"
+        },
+        "validator": {
+          "type": "string",
+          "description": "Custom validator function. Signature: () => void"
+        }
+      }
     },
     "any": {
       "type": ["string", "number", "boolean", "object", "array", "null"]
